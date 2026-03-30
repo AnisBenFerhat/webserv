@@ -1,0 +1,15 @@
+# [Compilation]
+obj/
+webserv
+*.o
+*.d
+
+# [OS]
+.DS_Store
+.DS_Store?
+._*
+
+# [IDEs]
+.vscode/
+.idea/
+*.swp
