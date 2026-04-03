@@ -14,10 +14,12 @@ CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -MMD -Iincludes
 # Directories
 OBJ_DIR = obj
 SRC_DIR = src
+CORE_DIR = src/core
 
 # Files
-SRCS = 	main.cpp \
-		src/core/ServerManager.cpp
+SRCS = 	\
+		$(CORE_DIR)/ServerManager.cpp \
+		main.cpp \
 
 OBJS = $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 DEPS = $(OBJS:.o=.d)
