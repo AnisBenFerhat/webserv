@@ -6,12 +6,12 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/03/30 23:15:36 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/04/05 23:50:27 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "core/ServerManager.hpp"
-#include <iostream>
+#include "utils/Logger.hpp"
 
 ServerManager::ServerManager(const std::string& configPath)
 	: _configPath(configPath) {}
@@ -19,5 +19,5 @@ ServerManager::ServerManager(const std::string& configPath)
 ServerManager::~ServerManager() {}
 
 void ServerManager::run() {
-	std::cout << "Webserv is running with: " << _configPath << std::endl;
+	Logger::logInfo("Webserv is running with: " + _configPath);
 }

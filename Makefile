@@ -15,10 +15,15 @@ CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -MMD -Iincludes
 OBJ_DIR = obj
 SRC_DIR = src
 CORE_DIR = src/core
+ERRORS_DIR = src/errors
+UTILS_DIR = src/utils
 
 # Files
 SRCS = 	\
 		$(CORE_DIR)/ServerManager.cpp \
+		$(ERRORS_DIR)/ErrorCode.cpp \
+		$(ERRORS_DIR)/Exceptions.cpp \
+		$(UTILS_DIR)/Logger.cpp \
 		main.cpp \
 
 OBJS = $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
