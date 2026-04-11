@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 22:09:26 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/05 23:50:50 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/04/11 15:54:00 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Logger {
 		static void logInfo(const std::string& msg);
 
 		/**
-		 * @brief Logs a warning memssage to standard ouput.
+		 * @brief Logs a warning message to standard ouput.
 		 * @param msg The message to display.
 		 **/
 		static void logWarning(const std::string& msg);

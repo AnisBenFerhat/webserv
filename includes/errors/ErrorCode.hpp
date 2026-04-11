@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 22:10:12 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/05 23:50:45 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/04/11 15:54:13 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum ErrorCode {
 	ERR_SOCKET_CREATE_FAILED,
 	ERR_SOCKET_BIND_FAILED,
 	ERR_POLL_FAILED,
-	ERR_UNKNOOWN
+	ERR_UNKNOWN
 };
 
 /**
