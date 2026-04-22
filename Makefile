@@ -16,6 +16,7 @@ OBJ_DIR = obj
 SRC_DIR = src
 CORE_DIR = src/core
 ERRORS_DIR = src/errors
+HTTP_DIR = src/http
 UTILS_DIR = src/utils
 
 # Files
@@ -23,6 +24,7 @@ SRCS = 	\
 		$(CORE_DIR)/ServerManager.cpp \
 		$(ERRORS_DIR)/ErrorCode.cpp \
 		$(ERRORS_DIR)/Exceptions.cpp \
+		$(HTTP_DIR)/HttpStatus.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp \
 
