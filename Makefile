@@ -25,6 +25,7 @@ SRCS = 	\
 		$(ERRORS_DIR)/ErrorCode.cpp \
 		$(ERRORS_DIR)/Exceptions.cpp \
 		$(HTTP_DIR)/HttpRequest.cpp \
+		$(HTTP_DIR)/HttpResponse.cpp \
 		$(HTTP_DIR)/HttpStatus.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp \
