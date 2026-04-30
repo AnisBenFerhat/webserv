@@ -14,6 +14,7 @@ CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -MMD -Iincludes
 # Directories
 OBJ_DIR = obj
 SRC_DIR = src
+CONFIG_DIR = src/config
 CORE_DIR = src/core
 ERRORS_DIR = src/errors
 HTTP_DIR = src/http
@@ -21,6 +22,7 @@ UTILS_DIR = src/utils
 
 # Files
 SRCS = 	\
+		$(CONFIG_DIR)/Config.cpp \
 		$(CORE_DIR)/ServerManager.cpp \
 		$(ERRORS_DIR)/ErrorCode.cpp \
 		$(ERRORS_DIR)/Exceptions.cpp \
