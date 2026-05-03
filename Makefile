@@ -23,6 +23,7 @@ UTILS_DIR = src/utils
 # Files
 SRCS = 	\
 		$(CONFIG_DIR)/Config.cpp \
+		$(CONFIG_DIR)/ServerBlock.cpp \
 		$(CORE_DIR)/ServerManager.cpp \
 		$(ERRORS_DIR)/ErrorCode.cpp \
 		$(ERRORS_DIR)/Exceptions.cpp \
