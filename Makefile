@@ -23,6 +23,7 @@ UTILS_DIR = src/utils
 # Files
 SRCS = 	\
 		$(CONFIG_DIR)/Config.cpp \
+		$(CONFIG_DIR)/LocationBlock.cpp \
 		$(CONFIG_DIR)/ServerBlock.cpp \
 		$(CORE_DIR)/ServerManager.cpp \
 		$(ERRORS_DIR)/ErrorCode.cpp \
@@ -31,7 +32,7 @@ SRCS = 	\
 		$(HTTP_DIR)/HttpResponse.cpp \
 		$(HTTP_DIR)/HttpStatus.cpp \
 		$(UTILS_DIR)/Logger.cpp \
-		main.cpp \
+		main.cpp
 
 OBJS = $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 DEPS = $(OBJS:.o=.d)
