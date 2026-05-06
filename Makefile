@@ -19,9 +19,11 @@ CORE_DIR = src/core
 ERRORS_DIR = src/errors
 HTTP_DIR = src/http
 UTILS_DIR = src/utils
+CGI_DIR = src/cgi
 
 # Files
 SRCS = 	\
+		$(CGI_DIR)/CgiHandler.cpp \
 		$(CONFIG_DIR)/Config.cpp \
 		$(CONFIG_DIR)/LocationBlock.cpp \
 		$(CONFIG_DIR)/ServerBlock.cpp \
