@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 11:26:03 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/28 14:59:38 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/10 13:30:16 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,14 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& other) {
 }
 
 HttpResponse::~HttpResponse() {}
+
+HttpStatus HttpResponse::getStatus() const {
+	return _status;
+}
+
+const std::string& HttpResponse::getBody() const {
+	return _body;
+}
 
 void HttpResponse::setStatus(HttpStatus status) {
 	_status = status;
