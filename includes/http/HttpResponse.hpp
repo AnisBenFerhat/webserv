@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 11:25:23 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/28 15:00:06 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/10 13:23:37 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,10 @@ class HttpResponse {
 		HttpResponse(const HttpResponse& other);
 		HttpResponse& operator=(const HttpResponse& other);
 		~HttpResponse();
+
+		// Getters
+		HttpStatus		   getStatus() const;
+		const std::string& getBody() const;
 
 		// Setters
 		void setStatus(HttpStatus status);
