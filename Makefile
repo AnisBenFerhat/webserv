@@ -36,6 +36,7 @@ SRCS = 	\
 		$(HTTP_DIR)/HttpStatus.cpp \
 		$(HTTP_DIR)/MimeTypes.cpp \
 		$(HTTP_DIR)/RequestRouter.cpp \
+		$(HTTP_DIR)/StaticFileHandler.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp
 
