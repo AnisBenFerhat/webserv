@@ -18,6 +18,7 @@ CONFIG_DIR = src/config
 CORE_DIR = src/core
 ERRORS_DIR = src/errors
 HTTP_DIR = src/http
+NET_DIR = src/net
 UTILS_DIR = src/utils
 CGI_DIR = src/cgi
 
@@ -37,6 +38,7 @@ SRCS = 	\
 		$(HTTP_DIR)/MimeTypes.cpp \
 		$(HTTP_DIR)/RequestRouter.cpp \
 		$(HTTP_DIR)/StaticFileHandler.cpp \
+		$(NET_DIR)/Poller.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp
 
