@@ -40,6 +40,7 @@ SRCS = 	\
 		$(HTTP_DIR)/RequestRouter.cpp \
 		$(HTTP_DIR)/StaticFileHandler.cpp \
 		$(NET_DIR)/Poller.cpp \
+		$(NET_DIR)/TcpListener.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp
 
@@ -50,13 +51,13 @@ DEPS = $(OBJS:.o=.d)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@echo "$(YELLOW)Linking $(NAME)...$(END)"
+	@echo -e "$(YELLOW)Linking $(NAME)...$(END)"
 	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
-	@echo "$(GREEN)Webserv starter is ready!$(END)"
+	@echo -e "$(GREEN)Webserv starter is ready!$(END)"
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
-	@echo "$(BLUE)Compiling $<...$(END)"
+	@echo -e "$(BLUE)Compiling $<...$(END)"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 .PHONY: clean
