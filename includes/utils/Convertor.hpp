@@ -6,7 +6,7 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:41:49 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/15 18:42:58 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/20 17:10:09 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,6 @@ class Convertor {
 		static std::string uIntToStr(unsigned int nbr);
 
 	private:
-		// Underline code for terminal output clarity
-		static const std::string _uline;
-		static const std::string _reset;
-
 		Convertor();
 		Convertor(const Convertor& src);
 		Convertor(const std::string content);

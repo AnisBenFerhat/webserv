@@ -6,14 +6,16 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:12:58 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/20 16:02:05 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/20 17:09:18 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "net/TcpListener.hpp"
 
-#include <bits/stdc++.h>
+#include <memory.h>
 #include <unistd.h>
+
+#include <cstring>
 
 void TcpListener::initTcp() {
 	_socket					 = socket(AF_INET, SOCK_STREAM, 0);
