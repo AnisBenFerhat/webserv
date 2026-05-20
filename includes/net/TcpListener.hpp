@@ -6,7 +6,7 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:10:50 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/18 16:51:37 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/20 16:00:04 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class TcpListener {
 	public:
 		// --- Constructors / Destructor
 		TcpListener();
+		TcpListener(int existingSocketFd);
 		TcpListener(const TcpListener& other);
 		TcpListener& operator=(const TcpListener& other);
 		~TcpListener();

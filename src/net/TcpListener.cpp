@@ -6,12 +6,13 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:12:58 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/18 16:47:16 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/20 16:02:05 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "net/TcpListener.hpp"
 
+#include <bits/stdc++.h>
 #include <unistd.h>
 
 void TcpListener::initTcp() {
@@ -52,6 +53,11 @@ void TcpListener::setSocket(int socketToSet) {
 }
 
 TcpListener::TcpListener() {}
+
+TcpListener::TcpListener(int existingSocketFd) {
+	setSocket(existingSocketFd);
+	std::memset(&_address, 0, sizeof(_address));
+}
 
 TcpListener::TcpListener(const TcpListener& other)
 	: _address(other._address), _socket(other._socket) {}

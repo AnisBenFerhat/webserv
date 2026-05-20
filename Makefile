@@ -39,8 +39,11 @@ SRCS = 	\
 		$(HTTP_DIR)/MimeTypes.cpp \
 		$(HTTP_DIR)/RequestRouter.cpp \
 		$(HTTP_DIR)/StaticFileHandler.cpp \
+		$(NET_DIR)/ClientConnection.cpp \
 		$(NET_DIR)/Poller.cpp \
 		$(NET_DIR)/TcpListener.cpp \
+		$(UTILS_DIR)/Convertor.cpp \
+		$(UTILS_DIR)/RefCounter.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp
 
