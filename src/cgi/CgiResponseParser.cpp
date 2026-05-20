@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 15:04:26 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/15 19:29:38 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/20 23:56:10 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,22 +15,23 @@
 #include <sstream>
 #include <map>
 
-HttpResponse CgiResponseParser::createResponse(const std::string& rawCgiOuput) {
-	if (rawCgiOuput.empty())
+HttpResponse CgiResponseParser::createResponse(
+	const std::string& rawCgiOutput) {
+	if (rawCgiOutput.empty())
 		return _makeBadGateway("CGI script produced no output");
 
 	size_t separatorLen = 4;
-	size_t separator	= rawCgiOuput.find("\r\n\r\n");
+	size_t separator	= rawCgiOutput.find("\r\n\r\n");
 	if (separator == std::string::npos) {
-		separator	 = rawCgiOuput.find("\n\n");
+		separator	 = rawCgiOutput.find("\n\n");
 		separatorLen = 2;
 	}
 
 	if (separator == std::string::npos)
 		return _makeBadGateway("CGI output has no header/body separator");
 
-	std::string headerBlock = rawCgiOuput.substr(0, separator);
-	std::string body		= rawCgiOuput.substr(separator + separatorLen);
+	std::string headerBlock = rawCgiOutput.substr(0, separator);
+	std::string body		= rawCgiOutput.substr(separator + separatorLen);
 
 	std::map<std::string, std::string> cgiHeaders;
 	std::istringstream				   stream(headerBlock);
