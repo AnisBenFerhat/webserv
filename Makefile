@@ -25,6 +25,7 @@ CGI_DIR = src/cgi
 # Files
 SRCS = 	\
 		$(CGI_DIR)/CgiHandler.cpp \
+		$(CGI_DIR)/CgiResponseParser.cpp \
 		$(CONFIG_DIR)/Config.cpp \
 		$(CONFIG_DIR)/LocationBlock.cpp \
 		$(CONFIG_DIR)/ServerBlock.cpp \
@@ -54,13 +55,13 @@ DEPS = $(OBJS:.o=.d)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@echo -e "$(YELLOW)Linking $(NAME)...$(END)"
+	@printf "$(YELLOW)Linking $(NAME)...$(END)\n"
 	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
-	@echo -e "$(GREEN)Webserv starter is ready!$(END)"
+	@printf "$(GREEN)Webserv starter is ready!$(END)\n"
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
-	@echo -e "$(BLUE)Compiling $<...$(END)"
+	@printf "$(BLUE)Compiling $<...$(END)\n"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 .PHONY: clean
