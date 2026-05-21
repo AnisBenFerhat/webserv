@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 15:04:26 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/20 23:56:10 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/21 15:48:08 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,11 @@ HttpResponse CgiResponseParser::createResponse(
 		cgiHeaders.find("Status");
 	if (iter != cgiHeaders.end()) {
 		int code = _parseStatusCode(iter->second);
-		status	 = static_cast<HttpStatus>(code);
+
+		if (code == -1)
+			return _makeBadGateway(
+				"CGI script returned a malformed Status header");
+		status = static_cast<HttpStatus>(code);
 	}
 
 	HttpResponse response;
@@ -107,11 +111,13 @@ HttpResponse CgiResponseParser::_makeBadGateway(const std::string& reason) {
 
 int CgiResponseParser::_parseStatusCode(const std::string& statusValue) {
 	std::istringstream iss(statusValue);
-	int				   code = 200;
-	iss >> code;
+	int				   code = 0;
+
+	if (!(iss >> code))
+		return -1;
 
 	if (code < 100 || code > 599)
-		return 200;
+		return -1;
 
 	return code;
 }
