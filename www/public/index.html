@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Webserv — HTTP/1.1 Server in C++98</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+	<nav>
+		<a class="nav-logo" href="#">Web<span>serv</span></a>
+		<ul class="nav-links">
+			<li><a href="#what">What is a web server</a></li>
+			<li><a href="#methods">HTTP methods</a></li>
+			<li><a href="#demo">Live demo</a></li>
+		</ul>
+	</nav>
+
+	<section class="hero">
+		<h1>An HTTP/1.1 server<br>built from <em>scratch</em></h1>
+		<p class="hero-sub">
+			A fully compliant HTTP web server written in C++98.
+			No external libraries. Pure socket programming,
+			non-blocking I/O with poll(), and RFC-conformant protocol handling.
+		</p>
+		<div class="hero-stats">
+			<div>
+				<div class="stat-val">HTTP/1.1</div>
+				<div class="stat-label">Protocol</div>
+			</div>
+			<div>
+				<div class="stat-val">C++98</div>
+				<div class="stat-label">Standard</div>
+			</div>
+			<div>
+				<div class="stat-val">poll()</div>
+				<div class="stat-label">Multiplexing</div>
+			</div>
+			<div>
+				<div class="stat-val">CGI/1.1</div>
+				<div class="stat-label">Dynamic content</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="surface" id="what">
+		<div class="section-tag">What is a web server ?</div>
+		<h2 class="section-title">The engine behind every website</h2>
+		<p class="section-sub">
+			A web server is a program that listens on a network port, accepts
+			incoming connections from clients (browsers, curl), reads their HTTP
+			requests, and sends back HTTP responses &mdash; HTML pages, images, JSON,
+			or any other content. Every website you visit is served by this type of server.
+		</p>
+
+		<div class="flow-section-label">Inside Webserv</div>
+		<p class="flow-section-sub">
+			Webserv runs on a single thread. Instead of spawning one thread per client,
+			it uses poll() to monitor all file descriptors simultaneously &mdash;
+			sockets, CGI pipes, and listeners &mdash; without ever blocking the process.
+			Hover over each component to learn more.
+		</p>
+
+		<div class="flow">
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#128225;</div>
+				<div class="flow-node-name">TcpListener</div>
+				<div class="flow-node-sub">accept()</div>
+				<div class="tooltip">
+					Opens the server port via socket(), bind(), listen().
+					Calls accept() for each new client and returns their fd.
+				</div>
+			</div>
+			<div class="flow-arrow">&#8594;</div>
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#128246;</div>
+				<div class="flow-node-name">Poller</div>
+				<div class="flow-node-sub">poll()</div>
+				<div class="tooltip">
+					Watches all file descriptors simultaneously using poll().
+					Never blocks — notifies when a fd is ready to read or write.
+				</div>
+			</div>
+			<div class="flow-arrow">&#8594;</div>
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#128268;</div>
+				<div class="flow-node-name">Connection</div>
+				<div class="flow-node-sub">recv() buffer</div>
+				<div class="tooltip">
+					Stores the full state of one client: read buffer, write buffer,
+					and current phase (reading, processing, writing, closing).
+				</div>
+			</div>
+			<div class="flow-arrow">&#8594;</div>
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#128196;</div>
+				<div class="flow-node-name">HttpParser</div>
+				<div class="flow-node-sub">HttpRequest</div>
+				<div class="tooltip">
+					Parses raw bytes into a structured HttpRequest object.
+					Handles partial recv() — data may arrive in multiple chunks.
+				</div>
+			</div>
+			<div class="flow-arrow">&#8594;</div>
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#129517;</div>
+				<div class="flow-node-name">Router</div>
+				<div class="flow-node-sub">LocationBlock</div>
+				<div class="tooltip">
+					Matches the request URI to the best LocationBlock using
+					Longest Prefix Matching from the server configuration.
+				</div>
+			</div>
+			<div class="flow-arrow">&#8594;</div>
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#9881;</div>
+				<div class="flow-node-name">Dispatcher</div>
+				<div class="flow-node-sub">static / CGI</div>
+				<div class="tooltip">
+					Identifies the resource type (static file, directory, CGI script)
+					and dispatches to the appropriate handler.
+				</div>
+			</div>
+			<div class="flow-arrow">&#8594;</div>
+
+			<div class="flow-node has-tooltip">
+				<div class="flow-node-icon">&#128228;</div>
+				<div class="flow-node-name">HttpResponse</div>
+				<div class="flow-node-sub">serialize()</div>
+				<div class="tooltip">
+					Assembles the final HTTP response and serializes it into
+					raw bytes ready to be sent back to the client via send().
+				</div>
+			</div>
+
+		</div>
+	</section>
+
+	<section id="methods">
+		<div class="section-tag">HTTP</div>
+		<h2 class="section-title">The main HTTP methods</h2>
+		<p class="section-sub">
+			Webserv supports the three main HTTP methods: GET, POST, and DELETE.
+			Together, they cover the most common actions on a resource: reading,
+			sending, and removing data.
+		</p>
+		<div class="methods-grid">
+			<div class="method-card">
+				<span class="method-badge badge-get">GET</span>
+				<div class="method-title">Fetch a resource</div>
+				<div class="method-desc">
+					Requests a resource from the server. Read-only — a GET request
+					must never modify data. Used for HTML pages, images, CSS, and
+					any static content.
+				</div>
+				<div class="code-block">
+					<span class="c-green">GET</span> /index.html HTTP/1.1<br>
+					<span class="c-muted">Host: localhost:8080</span><br>
+					<br>
+					<span class="c-blue">&larr; 200 OK</span><br>
+					<span class="c-yellow">Content-Type: text/html</span>
+				</div>
+			</div>
+			<div class="method-card">
+				<span class="method-badge badge-post">POST</span>
+				<div class="method-title">Send data</div>
+				<div class="method-desc">
+					Sends data to the server to create a resource. Used for file
+					uploads (multipart/form-data), form submissions, and CGI script
+					input via stdin.
+				</div>
+				<div class="code-block">
+					<span class="c-green">POST</span> /upload HTTP/1.1<br>
+					<span class="c-yellow">Content-Type: multipart/form-data</span><br>
+					<br>
+					<span class="c-blue">&larr; 201 Created</span><br>
+					<span class="c-muted">Location: /upload/file.txt</span>
+				</div>
+			</div>
+			<div class="method-card">
+				<span class="method-badge badge-delete">DELETE</span>
+				<div class="method-title">Remove a resource</div>
+				<div class="method-desc">
+					Requests the server to delete a resource. Webserv verifies
+					path traversal safety via realpath() and checks permissions
+					before calling unlink() on the target file.
+				</div>
+				<div class="code-block">
+					<span class="c-green">DELETE</span> /upload/file.txt HTTP/1.1<br>
+					<span class="c-muted">Host: localhost:8080</span><br>
+					<br>
+					<span class="c-blue">&larr; 204 No Content</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="surface" id="demo">
+		<div class="section-tag">Live demo</div>
+		<h2 class="section-title">Try it in real time</h2>
+		<p class="section-sub">
+			This page is served by Webserv itself. Send real HTTP requests
+			from your browser and watch the server respond.
+		</p>
+		<div class="demo-grid">
+			<div class="demo-panel">
+				<div class="demo-panel-head">
+					<span class="method-badge badge-get" style="margin:0">GET</span>
+					<span class="demo-panel-title">Fetch a resource</span>
+				</div>
+				<div class="demo-panel-body">
+					<label class="field-label">Path</label>
+					<input type="text" class="field-input" id="get-path" value="/index.html">
+					<button class="demo-btn btn-get" id="get-btn" onclick="sendGet()">Send GET request</button>
+					<div class="demo-response" id="get-response"></div>
+				</div>
+			</div>
+			<div class="demo-panel">
+				<div class="demo-panel-head">
+					<span class="method-badge badge-post" style="margin:0">POST</span>
+					<span class="demo-panel-title">Upload a file</span>
+				</div>
+				<div class="demo-panel-body">
+					<label class="field-label">File</label>
+					<input type="file" class="field-input" id="post-file" style="padding:6px">
+					<button class="demo-btn btn-post" id="post-btn" onclick="sendPost()">Send POST request</button>
+					<div class="demo-response" id="post-response"></div>
+				</div>
+			</div>
+			<div class="demo-panel">
+				<div class="demo-panel-head">
+					<span class="method-badge badge-delete" style="margin:0">DELETE</span>
+					<span class="demo-panel-title">Delete a resource</span>
+				</div>
+				<div class="demo-panel-body">
+					<label class="field-label">Path</label>
+					<input type="text" class="field-input" id="del-path" placeholder="/upload/filename.txt">
+					<button class="demo-btn btn-delete" id="del-btn" onclick="sendDelete()">Send DELETE request</button>
+					<div class="demo-response" id="del-response"></div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<footer>
+		<div class="footer-logo">Web<span>serv</span></div>
+		<div class="footer-team">
+			<span>flebrun</span> &middot; <span>elkanega</span> &middot; <span>aben-fer</span>
+		</div>
+		<div class="footer-copy"> C++98 &mdash; HTTP/1.1 &mdash; CGI/1.1</div>
+	</footer>
+
+	<script src="script.js"></script>
+
+</body>
+
+</html>
