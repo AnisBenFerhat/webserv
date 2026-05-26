@@ -6,14 +6,16 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 14:40:44 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/22 15:34:11 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/05/25 18:04:56 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "net/Fd.hpp"
-#include "utils/Logger.hpp"
-#include <unistd.h>
+
 #include <fcntl.h>
+#include <unistd.h>
+
+#include "utils/Logger.hpp"
 
 Fd::Fd() : _fd(-1) {}
 
@@ -35,8 +37,4 @@ Fd::~Fd() {
 	if (_fd != -1) {
 		close(_fd);
 	}
-}
-
-int	Fd::getRawFd() const {
-	return(_fd);
 }

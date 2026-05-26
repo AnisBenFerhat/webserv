@@ -6,20 +6,22 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 11:58:14 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/10 16:15:38 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:35:35 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "errors/ErrorPageGenerator.hpp"
-#include "http/HttpStatus.hpp"
+
 #include <fstream>
 #include <sstream>
 
-ErrorPageGenerator::ErrorPageGenerator(const ServerBlock& serverBlock)
-	: _serverBlock(serverBlock) {}
+#include "http/HttpStatus.hpp"
+
+ErrorPageGenerator::ErrorPageGenerator(const Config& config)
+	: _config(config) {}
 
 ErrorPageGenerator::ErrorPageGenerator(const ErrorPageGenerator& other)
-	: _serverBlock(other._serverBlock) {}
+	: _config(other._config) {}
 
 ErrorPageGenerator& ErrorPageGenerator::operator=(
 	const ErrorPageGenerator& other) {
@@ -33,27 +35,23 @@ HttpResponse ErrorPageGenerator::createResponse(HttpStatus status) const {
 	HttpResponse response;
 
 	response = _tryCustomPage(status);
-	if (!response.getBody().empty())
-		return response;
+	if (!response.getBody().empty()) return response;
 
 	response = _tryDefaultFile(status);
-	if (!response.getBody().empty())
-		return response;
+	if (!response.getBody().empty()) return response;
 
 	return _generateFallback(status);
 }
 
 HttpResponse ErrorPageGenerator::_tryCustomPage(HttpStatus status) const {
-	const std::map<int, std::string>& errorPages = _serverBlock.getErrorPages();
+	const std::map<int, std::string>& errorPages = _config.getErrorPages();
 	std::map<int, std::string>::const_iterator iter =
 		errorPages.find(httpStatusToInt(status));
 
-	if (iter == errorPages.end())
-		return HttpResponse();
+	if (iter == errorPages.end()) return HttpResponse();
 
 	std::string body = _readFile(iter->second);
-	if (body.empty())
-		return HttpResponse();
+	if (body.empty()) return HttpResponse();
 
 	return _buildResponse(status, body);
 }
@@ -63,8 +61,7 @@ HttpResponse ErrorPageGenerator::_tryDefaultFile(HttpStatus status) const {
 	oss << "www/errors/" << httpStatusToInt(status) << ".html";
 
 	std::string body = _readFile(oss.str());
-	if (body.empty())
-		return HttpResponse();
+	if (body.empty()) return HttpResponse();
 
 	return _buildResponse(status, body);
 }
@@ -88,8 +85,7 @@ HttpResponse ErrorPageGenerator::_generateFallback(HttpStatus status) const {
 
 std::string ErrorPageGenerator::_readFile(const std::string& path) const {
 	std::ifstream file(path.c_str(), std::ios::binary);
-	if (!file.is_open())
-		return "";
+	if (!file.is_open()) return "";
 
 	std::ostringstream buffer;
 	buffer << file.rdbuf();

@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 22:09:26 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/11 15:54:00 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:33:24 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,12 @@ class Logger {
 		 * @param msg The message to display.
 		 **/
 		static void logError(const std::string& msg);
+
+		/**
+		 * @brief Logs an part announcing message to standard ouput.
+		 * @param msg The message to display.
+		 **/
+		static void logPart(const std::string& msg);
 
 	private:
 		// Colors for terminal output

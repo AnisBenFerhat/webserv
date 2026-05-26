@@ -6,23 +6,24 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 09:32:01 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/05 12:13:14 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:30:16 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUESTROUTER_HPP
 #define REQUESTROUTER_HPP
 
-#include "http/HttpRequest.hpp"
-#include "config/ServerBlock.hpp"
-#include "config/LocationBlock.hpp"
 #include <string>
+
+#include "config/Config.hpp"
+#include "config/LocationBlock.hpp"
+#include "http/HttpRequest.hpp"
 
 /**
  * @brief Logic engine responsible for matching an HTTP request to a specific
  * route.
  * Implements the "Longest Prefix Match" algorithm to select the most
- * specific LocationBlock from a given ServerBlock.
+ * specific LocationBlock from a given Config.
  **/
 class RequestRouter {
 	public:
@@ -39,7 +40,7 @@ class RequestRouter {
 		 * @return Pointer to the best LocationBlock, or NULL if no match is
 		 * found.
 		 */
-		static const LocationBlock* matchLocation(const ServerBlock& server,
+		static const LocationBlock* matchLocation(const Config&		 server,
 												  const HttpRequest& request);
 
 	private:

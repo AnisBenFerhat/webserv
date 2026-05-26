@@ -6,17 +6,19 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 14:08:13 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/06 14:21:29 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:54:16 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
-#include "http/HttpRequest.hpp"
-#include <string>
-#include <map>
 #include <sys/types.h>
+
+#include <map>
+#include <string>
+
+#include "http/HttpRequest.hpp"
 
 /**
  * @brief Manage CGI execution by preparing the environment and forking
@@ -48,7 +50,9 @@ class CgiHandler {
 		 * @brief Returns the PID of the new child process.
 		 * @return pid_t The child's PID.
 		 */
-		pid_t getPid() const;
+		pid_t getPid() const {
+			return _pid;
+		}
 
 	private:
 		std::map<std::string, std::string> _env;

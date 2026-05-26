@@ -6,11 +6,12 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 22:09:50 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/05 23:50:40 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:38:05 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils/Logger.hpp"
+
 #include <iostream>
 
 const std::string Logger::_cyan	  = "\033[1;36m";
@@ -28,4 +29,10 @@ void Logger::logWarning(const std::string& msg) {
 
 void Logger::logError(const std::string& msg) {
 	std::cerr << _red << "[ERROR] " << _reset << msg << std::endl;
+}
+
+void Logger::logPart(const std::string& msg) {
+	std::cout << "\n"
+			  << _cyan << "[PART] " << _reset << "----- " << msg << " -----"
+			  << std::endl;
 }

@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 14:40:31 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/22 11:16:13 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/05/25 18:05:10 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,10 @@ class Fd {
 
 		/**
 		 * @brief Get raw int file descriptor for Poller to pass to poll()
-		*/
-		int getRawFd() const;
+		 */
+		int getRawFd() const {
+			return _fd;
+		}
 
 	private:
 		Fd(const Fd& other);

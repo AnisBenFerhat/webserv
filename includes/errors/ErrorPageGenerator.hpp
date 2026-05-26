@@ -6,17 +6,18 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 11:58:26 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/10 18:10:10 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:29:42 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ERRORPAGEGENERATOR_HPP
 #define ERRORPAGEGENERATOR_HPP
 
-#include "http/HttpStatus.hpp"
-#include "http/HttpResponse.hpp"
-#include "config/ServerBlock.hpp"
 #include <string>
+
+#include "config/Config.hpp"
+#include "http/HttpResponse.hpp"
+#include "http/HttpStatus.hpp"
 
 /**
  * @brief Finds the best error page available, with a guaranteed internal
@@ -24,7 +25,7 @@
  **/
 class ErrorPageGenerator {
 	public:
-		ErrorPageGenerator(const ServerBlock& ServerBlock);
+		ErrorPageGenerator(const Config& Config);
 		ErrorPageGenerator(const ErrorPageGenerator& other);
 		ErrorPageGenerator& operator=(const ErrorPageGenerator& other);
 		~ErrorPageGenerator();
@@ -39,13 +40,13 @@ class ErrorPageGenerator {
 		HttpResponse createResponse(HttpStatus status) const;
 
 	private:
-		const ServerBlock& _serverBlock;
-		HttpResponse	   _tryCustomPage(HttpStatus status) const;
-		HttpResponse	   _tryDefaultFile(HttpStatus status) const;
-		HttpResponse	   _generateFallback(HttpStatus status) const;
-		std::string		   _readFile(const std::string& path) const;
-		HttpResponse	   _buildResponse(HttpStatus		 status,
-										  const std::string& body) const;
+		const Config& _config;
+		HttpResponse  _tryCustomPage(HttpStatus status) const;
+		HttpResponse  _tryDefaultFile(HttpStatus status) const;
+		HttpResponse  _generateFallback(HttpStatus status) const;
+		std::string	  _readFile(const std::string& path) const;
+		HttpResponse  _buildResponse(HttpStatus			status,
+									 const std::string& body) const;
 };
 
 #endif

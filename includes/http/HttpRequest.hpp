@@ -6,15 +6,15 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/24 10:43:28 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/26 21:53:43 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 18:00:28 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP
 
-#include <string>
 #include <map>
+#include <string>
 
 /** *
  * @brief Enumeration of HTTP methods supported by the server.
@@ -29,10 +29,18 @@ class HttpRequest {
 		~HttpRequest();
 
 		// Getters
-		HttpMethod		   getMethod() const;
-		const std::string& getPath() const;
-		const std::string& getProtocol() const;
-		const std::string& getBody() const;
+		HttpMethod getMethod() const {
+			return _method;
+		};
+		const std::string& getPath() const {
+			return _path;
+		}
+		const std::string& getProtocol() const {
+			return _protocol;
+		}
+		const std::string& getBody() const {
+			return _body;
+		}
 
 		/**
 		 * @brief Fetch a specific header value.
@@ -47,11 +55,21 @@ class HttpRequest {
 		std::string getMethodString() const;
 
 		// Setters
-		void setMethod(HttpMethod method);
-		void setPath(const std::string& path);
-		void setProtocol(const std::string& protocol);
-		void addHeader(const std::string& key, const std::string& value);
-		void appendToBody(const std::string& content);
+		void setMethod(HttpMethod method) {
+			_method = method;
+		};
+		void setPath(const std::string& path) {
+			_path = path;
+		};
+		void setProtocol(const std::string& protocol) {
+			_protocol = protocol;
+		};
+		void addHeader(const std::string& key, const std::string& value) {
+			_headers[key] = value;
+		};
+		void appendToBody(const std::string& content) {
+			_body += content;
+		};
 
 	private:
 		HttpMethod						   _method;

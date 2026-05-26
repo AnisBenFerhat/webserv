@@ -6,16 +6,17 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 11:25:23 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/10 13:23:37 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 18:03:49 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTPRESPONSE_HPP
 #define HTTPRESPONSE_HPP
 
-#include "http/HttpStatus.hpp"
-#include <string>
 #include <map>
+#include <string>
+
+#include "http/HttpStatus.hpp"
 
 /** *
  * @brief Class designed to build and serialize an HTTP response.
@@ -28,13 +29,23 @@ class HttpResponse {
 		~HttpResponse();
 
 		// Getters
-		HttpStatus		   getStatus() const;
-		const std::string& getBody() const;
+		HttpStatus getStatus() const {
+			return _status;
+		}
+		const std::string& getBody() const {
+			return _body;
+		};
 
 		// Setters
-		void setStatus(HttpStatus status);
-		void setHeader(const std::string& key, const std::string& value);
-		void setBody(const std::string& body);
+		void setStatus(HttpStatus status) {
+			_status = status;
+		}
+		void setHeader(const std::string& key, const std::string& value) {
+			_headers[key] = value;
+		}
+		void setBody(const std::string& body) {
+			_body = body;
+		}
 
 		/**
 		 * @brief Converts the object into a raw HTTP response string.

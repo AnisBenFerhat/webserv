@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/24 10:43:41 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/04/26 21:52:07 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 18:00:36 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,21 +33,6 @@ HttpRequest& HttpRequest::operator=(const HttpRequest& other) {
 HttpRequest::~HttpRequest() {}
 
 // Getters
-HttpMethod HttpRequest::getMethod() const {
-	return _method;
-}
-
-const std::string& HttpRequest::getPath() const {
-	return _path;
-}
-
-const std::string& HttpRequest::getProtocol() const {
-	return _protocol;
-}
-
-const std::string& HttpRequest::getBody() const {
-	return _body;
-}
 
 std::string HttpRequest::getHeader(const std::string& key) const {
 	std::map<std::string, std::string>::const_iterator iter =
@@ -69,26 +54,4 @@ std::string HttpRequest::getMethodString() const {
 		default:
 			return "UNKNOWN";
 	}
-}
-
-// Setters
-
-void HttpRequest::setMethod(HttpMethod method) {
-	_method = method;
-}
-
-void HttpRequest::setPath(const std::string& path) {
-	_path = path;
-}
-
-void HttpRequest::setProtocol(const std::string& protocol) {
-	_protocol = protocol;
-}
-
-void HttpRequest::addHeader(const std::string& key, const std::string& value) {
-	_headers[key] = value;
-}
-
-void HttpRequest::appendToBody(const std::string& content) {
-	_body += content;
 }
