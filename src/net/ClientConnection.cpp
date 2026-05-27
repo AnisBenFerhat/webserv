@@ -6,7 +6,7 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/26 17:05:37 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/27 14:24:42 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,12 +55,13 @@ void ClientConnection::handleRead() {
 						mockResponse.end());
 	// --- MOCK RESPONSE FOR TESTING ---
 
-	/* Parsing condition to add there
-	 if (parseHttpRequest() == PARSE_SUCCESS) {*/
+	// TODO Parsing condition to add there and remove mock response by a real
+	// one
+	// if (parseHttpRequest() == PARSE_SUCCESS) {
 	_poller->setEvents(_tcpListener.getSocket(), POLLOUT);
-	/*} else {
-		_poller->setEvents(_tcpListener.getSocket(), POLLIN);
-	}*/
+	//} else {
+	//	_poller->setEvents(_tcpListener.getSocket(), POLLIN);
+	//}
 }
 
 void ClientConnection::handleWrite() {
@@ -102,10 +103,11 @@ bool ClientConnection::isTimedOut() const {
 // --- Constructors / Destructor
 
 ClientConnection::ClientConnection()
-	: RefCounter(), _tcpListener(), _status(InitialState) {}
-
-ClientConnection::ClientConnection(int socketFd)
-	: RefCounter(), _tcpListener(socketFd), _status(InitialState) {}
+	: RefCounter(),
+	  _tcpListener(),
+	  _poller(NULL),
+	  _serverBlk(NULL),
+	  _status(InitialState) {}
 
 ClientConnection::ClientConnection(int socketFd, struct sockaddr_in address,
 								   const ServerBlock* serverBlk, Poller* poller)
@@ -120,6 +122,7 @@ ClientConnection::ClientConnection(const ClientConnection& other)
 	  _tcpListener(other._tcpListener),
 	  _readBuffer(other._readBuffer),
 	  _writeBuffer(other._writeBuffer),
+	  _poller(other._poller),
 	  _serverBlk(other._serverBlk),
 	  _status(other._status) {}
 
@@ -129,6 +132,7 @@ ClientConnection& ClientConnection::operator=(const ClientConnection& other) {
 		_tcpListener = other._tcpListener;
 		_readBuffer	 = other._readBuffer;
 		_writeBuffer = other._writeBuffer;
+		_poller		 = other._poller;
 		_serverBlk	 = other._serverBlk;
 		_status		 = other._status;
 	}

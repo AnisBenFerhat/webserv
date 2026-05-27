@@ -6,7 +6,7 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:12:58 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/26 16:26:35 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/27 13:40:08 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,10 @@ int TcpListener::listenTcp() {
 
 void TcpListener::closeTcp() {
 	if (_socket >= 0) {
-		close(_socket);
+		if (close(_socket) < 0)
+			Logger::logWarning("Error while closing FD [" +
+							   Convertor::intToStr(_socket) +
+							   "]: " + strerror(errno));
 	}
 	_socket = -1;
 }

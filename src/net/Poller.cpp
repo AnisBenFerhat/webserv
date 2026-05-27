@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:34 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/26 16:56:25 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/27 13:42:05 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@
 // --- Specific Methods ---
 
 void Poller::removeClient(int clientFd) {
-	// 1. Find the object first before blowing away the tables
 	std::map<int, ClientConnection*>::const_iterator clientIt =
 		_lookupTable.getClientIt(clientFd);
 	if (clientIt == _lookupTable.getClientEndIt()) {
@@ -42,7 +41,6 @@ void Poller::removeClient(int clientFd) {
 	removeFd(clientFd);
 	_lookupTable.removeFd(clientFd);
 	delete connectionPtr;
-	close(clientFd);
 
 	Logger::logInfo("Client connection on FD [" +
 					Convertor::intToStr(clientFd) +

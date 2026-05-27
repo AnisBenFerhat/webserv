@@ -6,7 +6,7 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/26 14:20:51 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/27 12:53:47 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,6 @@
 #include "net/Poller.hpp"
 #include "net/TcpListener.hpp"
 #include "utils/RefCounter.hpp"
-
-class EventLoop;
 
 enum ConnectionState {
 	InitialState,
