@@ -3,7 +3,7 @@ function setLoading(prefix, loading) {
 }
 
 function statusText(code) {
-	var map = {
+	const map = {
 		200: 'OK', 201: 'Created', 204: 'No Content',
 		400: 'Bad Request', 403: 'Forbidden', 404: 'Not Found',
 		413: 'Payload Too Large', 500: 'Internal Server Error'
@@ -12,8 +12,8 @@ function statusText(code) {
 }
 
 function showResponse(prefix, status, body) {
-	var responseElement = document.getElementById(prefix + '-response');
-	var responseClass = (status >= 200 && status < 300) ? 'r-ok' : 'r-err';
+	const responseElement = document.getElementById(prefix + '-response');
+	const responseClass = (status >= 200 && status < 300) ? 'r-ok' : 'r-err';
 	responseElement.innerHTML =
 		'<span class="' + responseClass + '">HTTP/1.1 ' + status + ' ' + statusText(status) + '</span>\n' +
 		(body ? body.substring(0, 300) + (body.length > 300 ? '\n...(truncated)' : '') : '');
@@ -21,7 +21,7 @@ function showResponse(prefix, status, body) {
 }
 
 function sendGet() {
-	var path = document.getElementById('get-path').value || '/';
+	const path = document.getElementById('get-path').value || '/';
 	setLoading('get', true);
 	fetch(path)
 		.then(function (res) {
@@ -34,12 +34,12 @@ function sendGet() {
 }
 
 function sendPost() {
-	var file = document.getElementById('post-file').files[0];
+	const file = document.getElementById('post-file').files[0];
 	if (!file) { showResponse('post', 0, 'Please select a file.'); return; }
 
 	setLoading('post', true);
 
-	var formData = new FormData();
+	const formData = new FormData();
 	formData.append('file', file, file.name);
 
 	fetch('/upload/' + file.name, { method: 'POST', body: formData })
@@ -53,7 +53,7 @@ function sendPost() {
 }
 
 function sendDelete() {
-	var path = document.getElementById('del-path').value;
+	const path = document.getElementById('del-path').value;
 	if (!path) { showResponse('del', 0, 'Please enter a path.'); return; }
 
 	setLoading('del', true);
