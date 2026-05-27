@@ -6,41 +6,67 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/20 15:56:50 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/27 14:24:42 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "net/ClientConnection.hpp"
+
+#include <unistd.h>
 
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
 
 // --- Methods ---
 
-void ClientConnection::handleRead(Poller& poller) {
+void ClientConnection::handleRead() {
 	char tmpBuffer[1024];
 	int	 bytesRead =
 		recv(_tcpListener.getSocket(), tmpBuffer, sizeof(tmpBuffer), 0);
 
-	if (bytesRead == 0) {
-		_status = Closing;
-		return;
-	} else if (bytesRead < 0) {
-		Logger::logWarning("Failed while reading into socket FD: " +
-						   Convertor::intToStr(_tcpListener.getSocket()));
+	if (bytesRead <= 0) {
+		if (bytesRead == 0) {
+			Logger::logInfo("No bytes read / Client closed connection on FD: " +
+							Convertor::intToStr(_tcpListener.getSocket()));
+		} else {
+			Logger::logWarning("Error reading from socket FD: " +
+							   Convertor::intToStr(_tcpListener.getSocket()));
+		}
+
+		_poller->removeClient(_tcpListener.getSocket());
 		return;
 	}
 
+	Logger::logInfo(Convertor::intToStr(bytesRead) +
+					" bytes read in socket FD: " +
+					Convertor::intToStr(_tcpListener.getSocket()));
 	_readBuffer.insert(_readBuffer.end(), tmpBuffer, tmpBuffer + bytesRead);
 
-	// Parsing condition to add there
+	// --- MOCK RESPONSE FOR TESTING ---
+	std::string mockResponse =
+		"HTTP/1.1 200 OK\r\n"
+		"Content-Type: text/html\r\n"
+		"Content-Length: 26\r\n"
+		"Connection: close\r\n"
+		"\r\n"
+		"Test part 1, part 2 is -> just there !";
+
+	_writeBuffer.insert(_writeBuffer.end(), mockResponse.begin(),
+						mockResponse.end());
+	// --- MOCK RESPONSE FOR TESTING ---
+
+	// TODO Parsing condition to add there and remove mock response by a real
+	// one
 	// if (parseHttpRequest() == PARSE_SUCCESS) {
-	poller.setEvents(_tcpListener.getSocket(), POLLOUT);
+	_poller->setEvents(_tcpListener.getSocket(), POLLOUT);
+	//} else {
+	//	_poller->setEvents(_tcpListener.getSocket(), POLLIN);
 	//}
 }
 
-void ClientConnection::handleWrite(Poller& poller) {
+void ClientConnection::handleWrite() {
 	if (_writeBuffer.empty()) {
+		_poller->setEvents(_tcpListener.getSocket(), POLLIN);
 		return;
 	}
 
@@ -52,14 +78,17 @@ void ClientConnection::handleWrite(Poller& poller) {
 						   Convertor::intToStr(_tcpListener.getSocket()));
 		return;
 	}
+	Logger::logInfo("Successfully sent packet into socket FD: " +
+					Convertor::intToStr(_tcpListener.getSocket()));
 
 	_writeBuffer.erase(_writeBuffer.begin(), _writeBuffer.begin() + bytesSent);
 
 	if (_writeBuffer.empty()) {
 		if (_status == KeepAliveWait) {
-			poller.setEvents(_tcpListener.getSocket(), POLLIN);
+			_poller->setEvents(_tcpListener.getSocket(), POLLIN);
 		} else {
-			_status = Closing;
+			_poller->removeClient(_tcpListener.getSocket());
+			return;
 		}
 	}
 }
@@ -74,16 +103,28 @@ bool ClientConnection::isTimedOut() const {
 // --- Constructors / Destructor
 
 ClientConnection::ClientConnection()
-	: RefCounter(), _tcpListener(), _status(InitialState) {}
+	: RefCounter(),
+	  _tcpListener(),
+	  _poller(NULL),
+	  _serverBlk(NULL),
+	  _status(InitialState) {}
 
-ClientConnection::ClientConnection(int socketFd)
-	: RefCounter(), _tcpListener(socketFd), _status(InitialState) {}
+ClientConnection::ClientConnection(int socketFd, struct sockaddr_in address,
+								   const ServerBlock* serverBlk, Poller* poller)
+	: RefCounter(),
+	  _tcpListener(socketFd, address),
+	  _poller(poller),
+	  _serverBlk(serverBlk),
+	  _status(InitialState) {}
 
 ClientConnection::ClientConnection(const ClientConnection& other)
 	: RefCounter(other),
 	  _tcpListener(other._tcpListener),
 	  _readBuffer(other._readBuffer),
-	  _writeBuffer(other._writeBuffer) {}
+	  _writeBuffer(other._writeBuffer),
+	  _poller(other._poller),
+	  _serverBlk(other._serverBlk),
+	  _status(other._status) {}
 
 ClientConnection& ClientConnection::operator=(const ClientConnection& other) {
 	if (this != &other) {
@@ -91,6 +132,9 @@ ClientConnection& ClientConnection::operator=(const ClientConnection& other) {
 		_tcpListener = other._tcpListener;
 		_readBuffer	 = other._readBuffer;
 		_writeBuffer = other._writeBuffer;
+		_poller		 = other._poller;
+		_serverBlk	 = other._serverBlk;
+		_status		 = other._status;
 	}
 	return *this;
 }

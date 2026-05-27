@@ -6,12 +6,14 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 14:08:21 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/06 14:21:32 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:54:07 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cgi/CgiHandler.hpp"
+
 #include <unistd.h>
+
 #include <cstdlib>
 #include <cstring>
 
@@ -36,8 +38,7 @@ int CgiHandler::launchCgiProcess(const HttpRequest& request,
 	_initEnv(request, scriptPath);
 
 	int pipeOut[2];
-	if (pipe(pipeOut) == -1)
-		return -1;
+	if (pipe(pipeOut) == -1) return -1;
 
 	_pid = fork();
 	if (_pid == -1) {
@@ -64,10 +65,6 @@ int CgiHandler::launchCgiProcess(const HttpRequest& request,
 	close(pipeOut[1]);
 
 	return pipeOut[0];
-}
-
-pid_t CgiHandler::getPid() const {
-	return _pid;
 }
 
 void CgiHandler::_initEnv(const HttpRequest& request,
@@ -98,8 +95,7 @@ char** CgiHandler::_exportEnv() const {
 }
 
 void CgiHandler::_freeEnv(char** envp) const {
-	if (!envp)
-		return;
+	if (!envp) return;
 	for (size_t i = 0; envp[i] != NULL; ++i) {
 		delete[] envp[i];
 	}

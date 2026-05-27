@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 09:32:16 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/05 12:13:17 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/05/25 17:36:02 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,11 @@ RequestRouter& RequestRouter::operator=(const RequestRouter& other) {
 
 RequestRouter::~RequestRouter() {}
 
-const LocationBlock* RequestRouter::matchLocation(const ServerBlock& server,
+const LocationBlock* RequestRouter::matchLocation(const Config&		 config,
 												  const HttpRequest& request) {
 	std::string cleanPath = _getCleanPath(request.getPath());
-	const std::vector<LocationBlock>& locations		  = server.getLocations();
-	const LocationBlock*			  bestMatch		  = NULL;
+	const std::vector<LocationBlock>& locations = config.getLocationBlocks();
+	const LocationBlock*			  bestMatch = NULL;
 	size_t							  longestMatchLen = 0;
 
 	for (size_t i = 0; i < locations.size(); ++i) {
@@ -48,8 +48,7 @@ const LocationBlock* RequestRouter::matchLocation(const ServerBlock& server,
 std::string RequestRouter::_getCleanPath(const std::string& uri) {
 	size_t queryPosition = uri.find('?');
 
-	if (queryPosition != std::string::npos)
-		return uri.substr(0, queryPosition);
+	if (queryPosition != std::string::npos) return uri.substr(0, queryPosition);
 
 	return uri;
 }
