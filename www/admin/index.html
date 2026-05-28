@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Webserv - Admin Dashboard</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+	<nav>
+		<a class="nav-logo" href="#">Web<span>serv</span><small class="logo-admin">admin</small></a>
+		<div class="nav-badge">
+			<div class="nav-dot"></div>
+			Connected to Webserv
+		</div>
+	</nav>
+
+	<div class="page-header">
+		<h1 class="page-title">Admin Dashboard</h1>
+		<p class="page-sub">Upload files, manage resources, and monitor HTTP activity in real time.</p>
+	</div>
+
+	<div class="stats-bar">
+		<div class="stat-card">
+			<div class="stat-card-val" id="stat-files">0</div>
+			<div class="stat-card-label">Files on server</div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-card-val" id="stat-requests">0</div>
+			<div class="stat-card-label">Requests sent</div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-card-val" id="stat-deleted">0</div>
+			<div class="stat-card-label">Files deleted</div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-card-val" id="stat-errors">0</div>
+			<div class="stat-card-label">Errors</div>
+		</div>
+	</div>
+
+	<div class="section">
+		<h2 class="section-title">Upload a file</h2>
+		<div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+			ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+			<div class="upload-zone-icon">&#128228;</div>
+			<p class="upload-zone-text">
+				Drag and drop a file here, or <span>click to browse</span>
+			</p>
+			<button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('file-input').click()">
+				Choose file
+			</button>
+			<input type="file" id="file-input" class="upload-input" onchange="uploadFile(this.files[0])">
+			<div class="upload-progress" id="upload-progress">
+				<div class="upload-progress-bar">
+					<div class="upload-progress-fill" id="progress-fill"></div>
+				</div>
+				<div class="upload-progress-text" id="progress-text"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="section surface">
+		<h2 class="section-title">Uploaded files</h2>
+		<div class="empty-state" id="empty-state">No files on the server yet.</div>
+		<table class="files-table" id="files-table" style="display:none">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Size</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody id="files-body"></tbody>
+		</table>
+	</div>
+
+	<div class="section">
+		<h2 class="section-title">Request log</h2>
+		<div class="log-list" id="log-list">
+			<div class="log-empty" id="log-empty">No requests yet.</div>
+		</div>
+	</div>
+
+	<footer>
+		<div class="footer-logo">Web<span>serv</span></div>
+		<div class="footer-team">
+			<span>flebrun</span> &middot;
+			<span>elkanega</span> &middot;
+			<span>aben-fer</span>
+		</div>
+		<div class="footer-copy">Admin</div>
+	</footer>
+
+	<div class="toast" id="toast"></div>
+
+	<script src="script.js"></script>
+
+</body>
+
+</html>

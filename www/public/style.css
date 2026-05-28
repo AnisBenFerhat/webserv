@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght=400;500&family=Fraunces:ital,wght=0,300;0,700;1,300&display=swap');
 
 *,
 *::before,
@@ -18,6 +18,14 @@
 	--border: #e2ded5;
 	--mono: 'DM Mono', monospace;
 	--serif: 'Fraunces', Georgia, serif;
+
+	--log-bg: #1a1a18;
+	--log-text: #e2e2e0;
+	--log-dim: #a3a3a3;
+	--log-green: #28c840;
+	--log-blue: #60a5fa;
+	--log-red: #ff5f57;
+	--log-yellow: #febc2e;
 }
 
 html {
@@ -52,6 +60,8 @@ nav {
 	font-weight: 700;
 	color: var(--ink);
 	text-decoration: none;
+	display: inline-flex;
+	align-items: baseline;
 }
 
 .nav-logo span {
@@ -454,11 +464,11 @@ section.surface {
 .demo-response {
 	display: none;
 	margin-top: 12px;
-	background: #1a1a18;
+	background: var(--log-bg);
 	border-radius: 6px;
-	padding: 10px 14px;
+	padding: 14px;
 	font-size: 11px;
-	color: #6b6b5f;
+	color: var(--log-text);
 	font-family: var(--mono);
 	line-height: 1.8;
 	white-space: pre-wrap;
@@ -470,15 +480,17 @@ section.surface {
 }
 
 .demo-response .r-ok {
-	color: #28c840;
+	color: var(--log-green);
+	font-weight: 500;
 }
 
 .demo-response .r-err {
-	color: #ff5f57;
+	color: var(--log-red);
+	font-weight: 500;
 }
 
 .demo-response .r-info {
-	color: #60a5fa;
+	color: var(--log-blue);
 }
 
 /* FOOTER */
@@ -496,11 +508,11 @@ footer {
 	font-family: var(--serif);
 	font-size: 18px;
 	font-weight: 700;
-	color: #fff;
+	color: var(--surface);
 }
 
 .footer-logo span {
-	color: #60a5fa;
+	color: var(--log-blue);
 }
 
 .footer-team {
