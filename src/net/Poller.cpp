@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:34 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/27 13:42:05 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/31 17:07:10 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@ void Poller::removeClient(int clientFd) {
 
 	ClientConnection* connectionPtr = clientIt->second;
 
-	removeFd(clientFd);
 	_lookupTable.removeFd(clientFd);
+	removeFd(clientFd);
 	delete connectionPtr;
 
 	Logger::logInfo("Client connection on FD [" +
@@ -55,11 +55,11 @@ int Poller::acceptTcpConnection(int socketFd, struct sockaddr* client_addr,
 		Logger::logWarning("Socket FD [" + Convertor::intToStr(socketFd) +
 						   "] failed accepting an entering connection: " +
 						   std::string(strerror(errno)));
+		return -1;
 	} else {
 		Logger::logInfo("Socket FD [" + Convertor::intToStr(socketFd) +
 						"] accepted a new connection [" +
 						Convertor::intToStr(clientFd) + "]");
-		fcntl(clientFd, F_SETFL, O_NONBLOCK);
 	}
 	return clientFd;
 }
@@ -75,16 +75,21 @@ void Poller::acceptNewConnection(int socketFd, const ServerBlock* serverBlk) {
 		return;
 	}
 
-	ClientConnection* newConnection =
-		new ClientConnection(clientFd, clientAddr, serverBlk, this);
+	Fd*	heapFd = new Fd(clientFd);
+	if (heapFd->getRawFd() < 0) {
+		delete heapFd;
+		return;
+	}
 
-	addFd(clientFd, POLLIN);
-	getLookupTable().insertClient(clientFd, newConnection);
+	ClientConnection* newConnection = new ClientConnection(heapFd,
+									  serverBlk, this);
+
+	this->addFd(clientFd, POLLIN);
+	this->getLookupTable().insertClient(clientFd, newConnection);
 }
 
 void Poller::initPoller(const std::vector<ServerBlock*>& serverBlocks) {
-	TcpListener tcpTmp;
-	int			listenerFd;
+	int	listenerFd;
 
 	for (std::vector<ServerBlock*>::const_iterator it = serverBlocks.begin();
 		 it != serverBlocks.end(); ++it) {
@@ -102,16 +107,18 @@ void Poller::initPoller(const std::vector<ServerBlock*>& serverBlocks) {
 void Poller::handleFdActivity(int fd, short revents) {
 	Logger::logPart("Poller detected activity on FD " +
 					Convertor::intToStr(fd));
-
+// Listening Socket - Incoming connection
 	std::map<int, const ServerBlock*>::const_iterator ServerBlkIt =
 		_lookupTable.getServerBlkIt(fd);
 	if (ServerBlkIt != _lookupTable.getServerBlkEndIt()) {
 		Logger::logInfo("Found corresponding ServerBlock to FD [" +
 						Convertor::intToStr(fd) + "]");
-		acceptNewConnection(ServerBlkIt->first, ServerBlkIt->second);
+		if (revents & POLLIN) {
+			acceptNewConnection(ServerBlkIt->first, ServerBlkIt->second);
+		}
 		return;
 	}
-
+// CGI pipe
 	std::map<int, ClientConnection*>::const_iterator CgiPipeIt =
 		_lookupTable.getCgiPipeIt(fd);
 	if (CgiPipeIt != _lookupTable.getCgiPipeEndIt()) {
@@ -122,7 +129,7 @@ void Poller::handleFdActivity(int fd, short revents) {
 		}
 		return;
 	}
-
+//high-level HTTP client connection branch
 	std::map<int, ClientConnection*>::const_iterator clientIt =
 		_lookupTable.getClientIt(fd);
 	if (clientIt != _lookupTable.getClientEndIt()) {
@@ -132,7 +139,6 @@ void Poller::handleFdActivity(int fd, short revents) {
 		if (revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			Logger::logWarning("Client disconnected abruptly on FD [" +
 							   Convertor::intToStr(fd) + "]");
-			close(fd);
 			removeClient(fd);
 			return;
 		}
@@ -180,8 +186,13 @@ std::vector<int> Poller::getFds() const {
 	}
 	return ready;
 }
-
+//TODO
+//Will need to modify events flags when CGI pipes are active
 void Poller::setEvents(int fd, short events) {
+	if (fd < 0) {
+		Logger::logWarning("Invalid file descriptor.");
+		return;
+	}
 	for (std::size_t i = 0; i < _fds.size(); ++i) {
 		if (_fds[i].fd == fd) {
 			_fds[i].events	= events;
@@ -209,9 +220,9 @@ void Poller::removeFd(int fd) {
 			if (iter != _fds.end() - 1) {
 				*iter = _fds.back();
 			}
-			Logger::logInfo("Socket removed from the Poller [" +
-							Convertor::intToStr(fd) + "] (" +
-							Convertor::eventsToStr(iter->events) + ")");
+			// Logger::logInfo("Socket removed from the Poller [" +
+			// 				Convertor::intToStr(fd) + "] (" +
+			// 				Convertor::eventsToStr(iter->events) + ")");
 			_fds.pop_back();
 			return;
 		}
@@ -219,6 +230,7 @@ void Poller::removeFd(int fd) {
 }
 
 void Poller::clearTable() {
+	_fds.clear();
 	_lookupTable.clearTable();
 }
 
@@ -226,16 +238,6 @@ void Poller::clearTable() {
 
 Poller::Poller() {}
 
-Poller::Poller(const Poller& other) {
-	*this = other;
+Poller::~Poller() {
+	clearTable();
 }
-
-Poller& Poller::operator=(const Poller& other) {
-	if (this != &other) {
-		_fds		 = other._fds;
-		_lookupTable = other._lookupTable;
-	}
-	return *this;
-}
-
-Poller::~Poller() {}
