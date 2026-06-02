@@ -12,9 +12,16 @@
 
 	<nav>
 		<a class="nav-logo" href="#">Web<span>serv</span><small class="logo-admin">admin</small></a>
-		<div class="nav-badge">
-			<div class="nav-dot"></div>
-			Connected to Webserv
+		<div class="nav-actions">
+			<span id="nav-user" class="nav-user-label"></span>
+			<div class="nav-badge">
+				<div class="nav-dot"></div>
+				Connected to Webserv
+			</div>
+			<form id="logout-form" method="POST" action="/cgi-bin/logout.py" class="logout-form">
+				<a href="#" class="nav-logout-link"
+					onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+			</form>
 		</div>
 	</nav>
 

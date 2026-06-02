@@ -3,6 +3,24 @@ let deletedCount = 0;
 let errorCount = 0;
 let fileCount = 0;
 
+function checkSession() {
+	fetch('/cgi-bin/check_session.py')
+		.then(function (res) { return res.json(); })
+		.then(function (data) {
+			if (!data.valid) {
+				window.location.href = '/index.html';
+			} else {
+				document.getElementById('nav-user').textContent = data.username;
+			}
+		})
+		.catch(function () {
+			window.location.href = '/index.html';
+		});
+}
+
+checkSession();
+
+
 // Utils
 
 function getCurrentTime() {

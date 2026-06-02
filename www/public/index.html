@@ -16,6 +16,8 @@
 			<li><a href="#what">What is a web server</a></li>
 			<li><a href="#methods">HTTP methods</a></li>
 			<li><a href="#demo">Live demo</a></li>
+			<li><a href="#" class="nav-admin-link" onclick="openLoginModal(event)">Admin</a></li>
+			</li>
 		</ul>
 	</nav>
 
@@ -258,6 +260,33 @@
 		</div>
 		<div class="footer-copy"> C++98 &mdash; HTTP/1.1 &mdash; CGI/1.1</div>
 	</footer>
+
+	<div class="modal-overlay" id="login-modal" onclick="closeLoginModal()">
+		<div class="login-card" onclick="event.stopPropagation()">
+			<button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
+			<div class="login-logo">Web<span>serv</span><small>admin</small></div>
+			<div class="login-sub">Sign in to access the dashboard</div>
+
+			<div class="login-error" id="login-error-msg">
+				Invalid username or password.
+			</div>
+
+			<form method="POST" action="/cgi-bin/login.py">
+				<label class="login-label">Username</label>
+				<input class="login-input" type="text" name="username" value="admin" required autocomplete="username">
+
+				<label class="login-label">Password</label>
+				<input class="login-input" type="password" name="password" value="webserv42" required
+					autocomplete="current-password">
+
+				<button class="login-btn" type="submit">Sign in</button>
+			</form>
+
+			<div class="login-hint">
+				To test the session management, just click "Sign in" with the pre-filled credentials.
+			</div>
+		</div>
+	</div>
 
 	<script src="script.js"></script>
 

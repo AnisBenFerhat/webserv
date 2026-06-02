@@ -67,3 +67,27 @@ function sendDelete() {
 		.catch(function (err) { showResponse('del', 0, err.toString()); })
 		.then(function () { setLoading('del', false); });
 }
+
+function openLoginModal(event) {
+	if (event)
+		event.preventDefault();
+	const modal = document.getElementById('login-modal');
+	modal.style.display = 'flex';
+	setTimeout(function () {
+		modal.classList.add('show');
+	}, 10);
+}
+
+function closeLoginModal() {
+	const modal = document.getElementById('login-modal');
+	modal.classList.remove('show');
+	setTimeout(function () {
+		modal.style.display = 'none';
+	}, 200);
+}
+
+if (window.location.search.indexOf('login_error=1') !== -1) {
+	openLoginModal();
+	document.getElementById('login-error-msg').classList.add('show');
+	window.history.replaceState({}, document.title, window.location.pathname);
+}
