@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/26 16:49:11 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/31 17:04:32 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,20 +88,6 @@ void ServerManager::_stop() {
 }
 
 ServerManager::ServerManager() : _configs(), _serverBlocks() {}
-
-ServerManager::ServerManager(const ServerManager& other)
-	: _configs(other._configs),
-	  _poller(other._poller),
-	  _serverBlocks(other._serverBlocks) {}
-
-ServerManager& ServerManager::operator=(const ServerManager& other) {
-	if (this != &other) {
-		_configs	  = other._configs;
-		_poller		  = other._poller;
-		_serverBlocks = other._serverBlocks;
-	}
-	return (*this);
-}
 
 ServerManager::~ServerManager() {
 	for (size_t i = 0; i < _serverBlocks.size(); ++i) {

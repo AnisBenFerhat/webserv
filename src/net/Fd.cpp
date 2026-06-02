@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 14:40:44 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/25 18:04:56 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/02 09:52:09 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,10 @@ Fd::Fd(int fd) : _fd(fd) {
 	if (_fd != -1) {
 		int flags = fcntl(_fd, F_GETFL, 0);
 		if (flags == -1) {
-			flags = 0;
+			Logger::logError("Error getting file descriptor flags.");
+			close(_fd);
+			_fd = -1;
+			return;
 		}
 		if (fcntl(_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 			Logger::logError("Error setting file descriptor flag");
@@ -36,5 +39,6 @@ Fd::Fd(int fd) : _fd(fd) {
 Fd::~Fd() {
 	if (_fd != -1) {
 		close(_fd);
+		_fd = -1;
 	}
 }

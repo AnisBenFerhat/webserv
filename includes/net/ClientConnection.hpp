@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientConnection.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/27 12:53:47 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/31 18:02:39 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "config/ServerBlock.hpp"
 #include "http/HttpRequest.hpp"
 #include "http/HttpResponse.hpp"
+#include "net/Fd.hpp"
 #include "net/Poller.hpp"
 #include "net/TcpListener.hpp"
 #include "utils/RefCounter.hpp"
@@ -45,11 +46,7 @@ enum ConnectionState {
 class ClientConnection : public RefCounter {
 	public:
 		ClientConnection();
-		ClientConnection(int socketFd);
-		ClientConnection(int socketFd, struct sockaddr_in address,
-						 const ServerBlock* serverBlk, Poller* poller);
-		ClientConnection(const ClientConnection& other);
-		ClientConnection& operator=(const ClientConnection& other);
+		ClientConnection(Fd* fd, const ServerBlock* serverBlk, Poller* poller);
 		~ClientConnection();
 
 		void handleRead();		  ///< @brief When data is available to write.
@@ -57,12 +54,13 @@ class ClientConnection : public RefCounter {
 		bool isTimedOut() const;  ///< @brief Timeout state boolean checker.
 
 	private:
-		TcpListener		   _tcpListener;  ///< @brief Storing socket infos.
+		ClientConnection(const ClientConnection& other);
+		ClientConnection& operator=(const ClientConnection& other);
 		std::vector<char>  _readBuffer;	  ///< @brief Storing the request.
 		std::vector<char>  _writeBuffer;  ///< @brief Storing the response.
-		Poller*			   _poller;	 ///< @brief Sending orders to the Poller.
+		Fd*				   _fd;
 		const ServerBlock* _serverBlk;	///< @brief Retrieve packet size infos.
-
+		Poller*			   _poller;	 ///< @brief Sending orders to the Poller.
 		HttpRequest		_request;	///< @brief Decomposed form of the request.
 		HttpResponse	_response;	///< @brief Decomposed form of the response.
 		ConnectionState _status;	///< @brief Actual state of the request.

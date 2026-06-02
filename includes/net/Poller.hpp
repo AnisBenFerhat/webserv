@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Poller.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:28 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/26 16:56:42 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/28 16:14:51 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,13 +116,12 @@ class Poller {
 		void clearTable();
 
 		// --- Constructors / Destructor
-
 		Poller();
-		Poller(const Poller& other);
-		Poller& operator=(const Poller& other);
 		~Poller();
 
 	private:
+		Poller(const Poller& other);
+		Poller& operator=(const Poller& other);
 		std::vector<struct pollfd> _fds;
 		LookupTable				   _lookupTable;
 };

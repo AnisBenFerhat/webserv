@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LookupTable.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 19:03:16 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/25 18:10:30 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/01 15:35:22 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class LookupTable {
 				void clear();
 				typename std::map<int, ValueType>::const_iterator getIt(
 					int socketFdToSearch) const;
+				typename std::map<int, ValueType>::const_iterator begin() const;
 				typename std::map<int, ValueType>::const_iterator end() const;
 				size_t											  size() const;
 		};
@@ -56,8 +57,6 @@ class LookupTable {
 			server_iterator;
 
 		LookupTable();
-		LookupTable(const LookupTable& other);
-		LookupTable& operator=(const LookupTable& other);
 		~LookupTable();
 
 		void removeFd(int socketFd);
@@ -85,6 +84,16 @@ class LookupTable {
 			return _fdToServerBlk.getIt(fd);
 		}
 
+		client_iterator getClientBeginIt() const {
+			return _fdToClient.begin();
+		}
+		client_iterator getCgiPipeBeginIt() const {
+			return _fdToCgiPipe.begin();
+		}
+		server_iterator getServerBlkBeginIt() const {
+			return _fdToServerBlk.begin();
+		}
+
 		client_iterator getClientEndIt() const {
 			return _fdToClient.end();
 		}
@@ -96,17 +105,19 @@ class LookupTable {
 		}
 
 		// --- Size Getters ---
-		int getClientSize() const {
+		size_t getClientSize() const {
 			return _fdToClient.size();
 		}
-		int getCgiPipeSize() const {
+		size_t getCgiPipeSize() const {
 			return _fdToCgiPipe.size();
 		}
-		int getServerBlkSize() const {
+		size_t getServerBlkSize() const {
 			return _fdToServerBlk.size();
 		}
 
 	private:
+		LookupTable(const LookupTable& other);
+		LookupTable& operator=(const LookupTable& other);
 		LookupMap<ClientConnection*>  _fdToClient;
 		LookupMap<ClientConnection*>  _fdToCgiPipe;
 		LookupMap<const ServerBlock*> _fdToServerBlk;

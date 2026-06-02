@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:56:21 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/26 16:35:27 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/05/31 17:04:50 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,7 @@
 class ServerManager {
 	public:
 		ServerManager();
-		ServerManager(const ServerManager& other);
-		ServerManager& operator=(const ServerManager& other);
+
 		~ServerManager();
 
 		/**
@@ -42,6 +41,9 @@ class ServerManager {
 		void launch(const std::string& configFilePath);
 
 	private:
+		ServerManager(const ServerManager& other);
+		ServerManager& operator=(const ServerManager& other);
+
 		/**
 		 * @brief Initializes the server internal state.
 		 *
