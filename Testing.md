@@ -36,7 +36,7 @@ git pull origin QA-testing
 git merge [login/feature]
 
 # 4. Push to the server so testers can see it
-git push origin QA-testing
+git push origin QA-testing --force-with-lease
 ```
 
 ### Step C: Return to your clean feature branch
