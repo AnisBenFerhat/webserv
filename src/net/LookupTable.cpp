@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   LookupTable.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:14:29 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/25 18:09:30 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/02 09:18:21 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "net/LookupTable.hpp"
-
+#include "net/ClientConnection.hpp"
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
 
@@ -25,8 +25,20 @@ void LookupTable::removeFd(int socketFd) {
 }
 
 void LookupTable::clearTable() {
+	if (_fdToClient.size() == 0 && _fdToCgiPipe.size() == 0
+		&& _fdToServerBlk.size() == 0) {
+		return;
+	}
 	Logger::logInfo("Clearing LookupTable");
+	for (std::map<int, ClientConnection*>::const_iterator it = _fdToClient.begin();
+		it != _fdToClient.end(); ++it) {
+		delete it->second;
+	}
 	_fdToClient.clear();
+	for (std::map<int, ClientConnection*>::const_iterator it = _fdToCgiPipe.begin();
+		it != _fdToCgiPipe.end(); ++it) {
+		delete it->second;
+	}
 	_fdToCgiPipe.clear();
 	_fdToServerBlk.clear();
 }
@@ -35,18 +47,6 @@ void LookupTable::clearTable() {
 
 LookupTable::LookupTable() {}
 
-LookupTable::LookupTable(const LookupTable& other)
-	: _fdToClient(other._fdToClient),
-	  _fdToCgiPipe(other._fdToCgiPipe),
-	  _fdToServerBlk(other._fdToServerBlk) {}
-
-LookupTable& LookupTable::operator=(const LookupTable& other) {
-	if (this != &other) {
-		_fdToClient	   = other._fdToClient;
-		_fdToCgiPipe   = other._fdToCgiPipe;
-		_fdToServerBlk = other._fdToServerBlk;
-	}
-	return *this;
+LookupTable::~LookupTable() {
+	clearTable();
 }
-
-LookupTable::~LookupTable() {}

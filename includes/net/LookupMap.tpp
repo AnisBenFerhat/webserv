@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LookupMap.tpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/17 16:56:11 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/23 12:19:37 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/01 14:35:00 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,19 @@ void LookupTable::LookupMap<ValueType>::clear() {
 // --- Const Iterators getters methods ---
 
 template <typename ValueType>
-typename std::map<int, ValueType>::const_iterator 
+typename std::map<int, ValueType>::const_iterator
 LookupTable::LookupMap<ValueType>::getIt(int socketFdToSearch) const {
     return _map.find(socketFdToSearch);
 }
 
 template <typename ValueType>
-typename std::map<int, ValueType>::const_iterator 
+typename std::map<int, ValueType>::const_iterator
+LookupTable::LookupMap<ValueType>::begin() const {
+    return _map.begin();
+}
+
+template <typename ValueType>
+typename std::map<int, ValueType>::const_iterator
 LookupTable::LookupMap<ValueType>::end() const {
     return _map.end();
 }
@@ -62,7 +68,7 @@ template <typename ValueType>
 LookupTable::LookupMap<ValueType>::LookupMap(const LookupMap& other) : _map(other._map) {}
 
 template <typename ValueType>
-LookupTable::LookupMap<ValueType>& 
+LookupTable::LookupMap<ValueType>&
 LookupTable::LookupMap<ValueType>::operator=(const LookupMap& other) {
     if (this != &other) {
         _map = other._map;

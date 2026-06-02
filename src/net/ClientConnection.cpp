@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/31 17:09:08 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/02 09:24:27 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <unistd.h>
 #include <cerrno>
+#include <cstring>
 
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
@@ -28,31 +29,32 @@ void ClientConnection::handleRead() {
 	while(true) {
 		ssize_t	 bytesRead =
 			recv(_fd->getRawFd(), tmpBuffer, sizeof(tmpBuffer), 0);
-		if (bytesRead > 0) {
-			_readBuffer.insert(_readBuffer.end(), tmpBuffer, tmpBuffer + bytesRead);
-			_status = ReadingRequest;
-			continue;
-		}
-		if (bytesRead == 0) {
-			Logger::logInfo("No bytes read / Client closed connection on FD: " +
-							Convertor::intToStr(_fd->getRawFd()));
-			_poller->removeClient(_fd->getRawFd());
-			_status = Closing;
-			return;
-		}
 		if (bytesRead < 0) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			int	logErrno = errno;
+			if (logErrno == EAGAIN || logErrno == EWOULDBLOCK) {
 				break;
 			}
 			else {
 				Logger::logWarning("Read error on FD: " +
-								  Convertor::intToStr(_fd->getRawFd()));
+								  Convertor::intToStr(_fd->getRawFd()) +
+								  " - " + std::string(strerror(logErrno)));
+				_status = Closing;
 				_poller->removeClient(_fd->getRawFd());
 				return;
 			}
 		}
-		_status = Closing;
-		return;
+		if (bytesRead == 0) {
+			Logger::logInfo("No bytes read / Client closed connection on FD: " +
+							Convertor::intToStr(_fd->getRawFd()));
+			_status = Closing;
+			_poller->removeClient(_fd->getRawFd());
+			return;
+		}
+		if (bytesRead > 0) {
+			_readBuffer.insert(_readBuffer.end(), tmpBuffer, tmpBuffer + bytesRead);
+			_status = ReadingRequest;
+		}
+
 	}
 
 	// --- MOCK RESPONSE FOR TESTING ---
@@ -85,16 +87,20 @@ void ClientConnection::handleWrite() {
 	while (total < _writeBuffer.size()) {
 		std::size_t remaining = _writeBuffer.size() - total;
 		std::size_t toSend = remaining < 4096 ? remaining : 4096;
-		//&_writeBuffer[0] on an empty vector is undefined behavior
+
 		int bytesSent = send(_fd->getRawFd(), &_writeBuffer[total],
 							toSend, 0);
 		if (bytesSent < 0) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			int logErrno = errno;
+			if (logErrno == EAGAIN || logErrno == EWOULDBLOCK) {
 				_writeBuffer.erase(_writeBuffer.begin(),
 								_writeBuffer.begin() + total);
+				return;
 			}
 			Logger::logWarning("Failed while writing into socket FD: " +
-							Convertor::intToStr(_fd->getRawFd()));
+							Convertor::intToStr(_fd->getRawFd()) +
+							" - " + std::string(strerror(logErrno)));
+			_status = Closing;
 			_poller->removeClient(_fd->getRawFd());
 			return;
 		}
@@ -104,15 +110,15 @@ void ClientConnection::handleWrite() {
 			break;
 		}
 		total += static_cast<std::size_t>(bytesSent);
-	}
-	Logger::logInfo("Successfully sent packet into socket FD: " +
+		Logger::logInfo("Successfully sent packet into socket FD: " +
 					Convertor::intToStr(_fd->getRawFd()));
-
+	}
 	_writeBuffer.erase(_writeBuffer.begin(), _writeBuffer.begin() + total);
 	if (_writeBuffer.empty()) {
 		if (_status == KeepAliveWait) {
 			_poller->setEvents(_fd->getRawFd(), POLLIN | POLLOUT);
 		} else {
+			_status = Closing;
 			_poller->removeClient(_fd->getRawFd());
 		}
 	}
@@ -154,6 +160,6 @@ ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 }
 
 ClientConnection::~ClientConnection() {
-	delete(_fd);
+	delete _fd;
 	_fd = NULL;
 }
