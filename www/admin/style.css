@@ -82,6 +82,35 @@ nav {
 	margin-left: 6px;
 }
 
+.nav-actions {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.nav-user-label {
+	font-size: 12px;
+	color: var(--muted);
+}
+
+.logout-form {
+	margin: 0;
+	display: flex;
+	align-items: center;
+}
+
+.nav-actions .nav-logout-link {
+	font-size: 12px;
+	color: var(--muted);
+	text-decoration: none;
+	font-weight: 500;
+	transition: color 0.15s ease;
+}
+
+.nav-actions .nav-logout-link:hover {
+	color: var(--log-red);
+}
+
 .nav-badge {
 	font-size: 11px;
 	background: var(--green-lt);
