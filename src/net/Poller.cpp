@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:34 by elkanega          #+#    #+#             */
-/*   Updated: 2026/05/31 17:07:10 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/02 12:40:02 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,6 +162,15 @@ int Poller::pollEvents(int timeout) {
 		return 0;
 	}
 	int result = poll(&_fds[0], static_cast<nfds_t>(_fds.size()), timeout);
+	if (result < 0) {
+		int logErrno;
+		if (logErrno == EINTR) {
+			return 0;
+		}
+		Logger::logError("poll() failure: " +
+						 std::string(strerror(logErrno)));
+		return -1;
+	}
 	return result;
 }
 
