@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   TcpListener.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:10:50 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/26 16:40:07 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/03 15:40:40 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef TCPLISTENER_HPP
 #define TCPLISTENER_HPP
 
+#include "net/Fd.hpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
 
@@ -26,10 +27,8 @@ class TcpListener {
 	public:
 		// --- Constructors / Destructor
 		TcpListener();
-		TcpListener(int existingSocketFd);
-		TcpListener(const TcpListener& other);
+		explicit TcpListener(int existingSocketFd);
 		TcpListener(int existingSocketFd, struct sockaddr_in address);
-		TcpListener& operator=(const TcpListener& other);
 		~TcpListener();
 
 		// --- Methods ---
@@ -62,11 +61,11 @@ class TcpListener {
 
 		// --- Getters ---
 
-		const sockaddr_in& getAddress() {
+		const sockaddr_in& getAddress() const {
 			return _address;
 		}
 		int getSocket() const {
-			return _socket;
+			return _socket.getRawFd();
 		}
 
 		// --- Setters ---
@@ -74,17 +73,14 @@ class TcpListener {
 		void setAddress(const sockaddr_in& addressToSet) {
 			_address = addressToSet;
 		}
-		void setSocket(int socketToSet) {
-			_socket = socketToSet;
-		}
 
 	private:
+		TcpListener(const TcpListener& other);
+		TcpListener& operator=(const TcpListener& other);
 		/// @brief Stores the server's network config profile (IP & Port).
 		sockaddr_in _address;
 		/// @brief The active file descriptor index given by the OS kernel.
-		int _socket;
-		/// @brief Track who actually owns the resource if a copy has been made.
-		bool _isOwner;
+		Fd _socket;
 };
 
 #endif
