@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 11:42:16 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/26 13:34:47 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/03 12:30:52 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,15 +62,9 @@ class Config {
 
 		// --- Getters ---
 
-		int getPort() const {
-			return _port;
-		}
-		size_t getClientMaxBodySize() const {
-			return _clientMaxBodySize;
-		}
-		const std::string& getHost() const {
-			return _host;
-		}
+		int	   getPort() const { return _port; }
+		size_t getClientMaxBodySize() const { return _clientMaxBodySize; }
+		const std::string&				getHost() const { return _host; }
 		const std::vector<std::string>& getServerBlockName() const {
 			return _serverNames;
 		}
@@ -81,17 +75,25 @@ class Config {
 			return _locations;
 		}
 
+		/**
+		 * @brief Returns the default root directory used as a fallback for
+		 * location blocks.
+		 * @return A constant reference to the default root directory string.
+		 */
+		const std::string& getDefaultRoot() const { return _defaultRoot; }
+
+		/**
+		 * @brief Returns the default index file used as a fallback for location
+		 * blocks.
+		 * @return A constant reference to the default index file string.
+		 */
+		const std::string& getDefaultIndex() const { return _defaultIndex; }
+
 		// --- Setters ---
 
-		void setPort(int port) {
-			_port = port;
-		}
-		void setHost(const std::string& host) {
-			_host = host;
-		}
-		void setClientMaxBodySize(size_t size) {
-			_clientMaxBodySize = size;
-		}
+		void setPort(int port) { _port = port; }
+		void setHost(const std::string& host) { _host = host; }
+		void setClientMaxBodySize(size_t size) { _clientMaxBodySize = size; }
 		void addServerBlockName(const std::string& name) {
 			_serverNames.push_back(name);
 		}
@@ -100,6 +102,20 @@ class Config {
 		}
 		void addLocationBlock(const LocationBlock& loc) {
 			_locations.push_back(loc);
+		}
+
+		/**
+		 * @brief Sets the default root directory for the server.
+		 * @param root The default root directory path.
+		 */
+		void setDefaultRoot(const std::string& root) { _defaultRoot = root; }
+
+		/**
+		 * @brief Sets the default index file for the server.
+		 * @param index The default index file name.
+		 */
+		void setDefaultIndex(const std::string& index) {
+			_defaultIndex = index;
 		}
 
 	private:
@@ -126,7 +142,7 @@ class Config {
 		 * @return ErrorCode representing the success or syntax error within the
 		 * block.
 		 */
-		static ErrorCode _parseServerConf(std::ifstream& configFile);
+		ErrorCode _parseServerConf(std::ifstream& configFile);
 
 		// --- Private components ---
 
@@ -142,6 +158,11 @@ class Config {
 		std::vector<LocationBlock> _locations;
 		/// @brief List of domain names associated with this server.
 		std::vector<std::string> _serverNames;
+
+		std::string
+			_defaultRoot;  ///< Server-level root fallback for location blocks.
+		std::string _defaultIndex;	///< Server-level index fallback for
+									///< location blocks.
 };
 
 #endif

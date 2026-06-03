@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientConnection.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/31 18:02:39 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/03 15:18:02 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@
 #include <vector>
 
 #include "config/ServerBlock.hpp"
-#include "http/HttpRequest.hpp"
-#include "http/HttpResponse.hpp"
 #include "net/Fd.hpp"
 #include "net/Poller.hpp"
 #include "net/TcpListener.hpp"
@@ -56,14 +54,18 @@ class ClientConnection : public RefCounter {
 	private:
 		ClientConnection(const ClientConnection& other);
 		ClientConnection& operator=(const ClientConnection& other);
+		bool _receiveToBuffer();  ///< @brief Reads from socket. Returns false
+								  ///< if closed/error.
+		void _processHttpRequest();	 ///< @brief Parses, routes, and dispatches
+									 ///< the request.
+		void _sendBadRequest();		 ///< @brief Utility to send a 400 error.
+
 		std::vector<char>  _readBuffer;	  ///< @brief Storing the request.
 		std::vector<char>  _writeBuffer;  ///< @brief Storing the response.
 		Fd*				   _fd;
 		const ServerBlock* _serverBlk;	///< @brief Retrieve packet size infos.
 		Poller*			   _poller;	 ///< @brief Sending orders to the Poller.
-		HttpRequest		_request;	///< @brief Decomposed form of the request.
-		HttpResponse	_response;	///< @brief Decomposed form of the response.
-		ConnectionState _status;	///< @brief Actual state of the request.
+		ConnectionState	   _status;	 ///< @brief Actual state of the request.
 };
 
 #endif
