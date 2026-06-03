@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ServerBlock.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 17:11:46 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/26 16:40:50 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/03 13:20:41 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "config/ServerBlock.hpp"
-
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
+#include <map>
 
 std::vector<ServerBlock*> ServerBlock::initServerBlocks(
 	const std::vector<Config>& configs) {
@@ -76,17 +76,6 @@ const Config* ServerBlock::getConfigForHost(const std::string& hostname) const {
 // --- Constructors / Destructor ---
 
 ServerBlock::ServerBlock() : _configsREF(), _tcpListener() {}
-
-ServerBlock::ServerBlock(const ServerBlock& other)
-	: _configsREF(other._configsREF), _tcpListener(other._tcpListener) {}
-
-ServerBlock& ServerBlock::operator=(const ServerBlock& other) {
-	if (this != &other) {
-		this->_configsREF  = other._configsREF;
-		this->_tcpListener = other._tcpListener;
-	}
-	return *this;
-}
 
 ServerBlock::ServerBlock(const Config* singleConfig)
 	: _configsREF(), _tcpListener() {

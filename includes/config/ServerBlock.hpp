@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerBlock.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 12:24:23 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/26 16:38:00 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/03 15:33:05 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,40 +60,38 @@ class ServerBlock {
 		const std::vector<const Config*>& getConfigs() const {
 			return _configsREF;
 		}
+
 		const TcpListener& getTcpListener() const {
 			return _tcpListener;
 		}
+
 		int getSocket() const {
 			return _tcpListener.getSocket();
 		}
 
 		// --- Setters / Logic ---
-
 		void addConfig(const Config* config) {
 			if (config) {
 				_configsREF.push_back(config);
 			}
 		}
+
 		void setConfigs(std::vector<const Config*> configs) {
 			_configsREF = configs;
 		}
-		void setTcpListener(const TcpListener tcpListener) {
-			_tcpListener = tcpListener;
-		}
 
 		// --- Constructors / Destructor
-
 		ServerBlock();
-		ServerBlock(const ServerBlock& other);
-		ServerBlock& operator=(const ServerBlock& other);
-		ServerBlock(const Config* singleConfig);
+		explicit ServerBlock(const Config* singleConfig);
 		~ServerBlock();
 
 	private:
+		ServerBlock(const ServerBlock& other);
+		ServerBlock& operator=(const ServerBlock& other);
 		/// @brief References to Configs sharing this same port.
 		std::vector<const Config*> _configsREF;
-
 		/// @brief The network listener for this block's port.
 		TcpListener _tcpListener;
 };
+
 #endif

@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   TcpListener.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:12:58 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/27 13:40:08 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/03 14:34:36 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "net/TcpListener.hpp"
 
-#include <memory.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -27,22 +26,27 @@
 void TcpListener::initTcp(int port) {
 	std::memset(&_address, 0, sizeof(_address));
 
-	_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socket < 0) {
+	int rawSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (rawSocket < 0) {
 		Logger::logError("Failed to create socket: " +
 						 std::string(std::strerror(errno)));
 		return;
 	}
-	_isOwner = true;
+	_socket.reset(rawSocket);
+	if (_socket.getRawFd() == -1) {
+		Logger::logError("Failed to configure socket flags.");
+		return;
+	}
+
 	Logger::logInfo("Socket created successfully with FD [" +
-					Convertor::intToStr(_socket) + "]");
+					Convertor::intToStr(_socket.getRawFd()) + "]");
 
 	_address.sin_family		 = AF_INET;
 	_address.sin_port		 = htons(port);
 	_address.sin_addr.s_addr = INADDR_ANY;
 
 	int opt = 1;
-	if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+	if (setsockopt(_socket.getRawFd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
 		Logger::logError("setsockopt(SO_REUSEADDR) failed: " +
 						 std::string(std::strerror(errno)));
 		closeTcp();
@@ -66,55 +70,27 @@ void TcpListener::initTcp(int port) {
 }
 
 int TcpListener::bindTcp() {
-	return bind(_socket, (struct sockaddr*)&_address, sizeof(_address));
+	return bind(_socket.getRawFd(), reinterpret_cast<struct sockaddr*>(&_address), sizeof(_address));
 }
 
 int TcpListener::listenTcp() {
-	return listen(_socket, 5);
+	return listen(_socket.getRawFd(), 128);
 }
 
 void TcpListener::closeTcp() {
-	if (_socket >= 0) {
-		if (close(_socket) < 0)
-			Logger::logWarning("Error while closing FD [" +
-							   Convertor::intToStr(_socket) +
-							   "]: " + strerror(errno));
-	}
-	_socket = -1;
+	_socket.reset(-1);
 }
 
-// --- Constructors / Destructor
-
-TcpListener::TcpListener() : _socket(-1), _isOwner(false) {
+TcpListener::TcpListener() : _socket(-1) {
 	std::memset(&_address, 0, sizeof(_address));
 }
 
 TcpListener::TcpListener(int existingSocketFd)
-	: _socket(existingSocketFd), _isOwner(false) {
+	: _socket(existingSocketFd) {
 	std::memset(&_address, 0, sizeof(_address));
 }
 
 TcpListener::TcpListener(int existingSocketFd, struct sockaddr_in address)
-	: _address(address), _socket(existingSocketFd), _isOwner(false) {}
+	: _address(address), _socket(existingSocketFd) {}
 
-TcpListener::TcpListener(const TcpListener& other)
-	: _address(other._address), _socket(other._socket), _isOwner(false) {}
-
-TcpListener& TcpListener::operator=(const TcpListener& other) {
-	if (this != &other) {
-		// To prevent loss of an already existing socket
-		if (_socket >= 0 && _isOwner) {
-			closeTcp();
-		}
-		_address = other._address;
-		_socket	 = other._socket;
-		_isOwner = false;
-	}
-	return (*this);
-}
-
-TcpListener::~TcpListener() {
-	if (_socket >= 0 && _isOwner) {
-		closeTcp();
-	}
-}
+TcpListener::~TcpListener() {}
