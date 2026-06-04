@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 14:08:13 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/25 17:54:16 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/03 16:31:13 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,19 +40,20 @@ class CgiHandler {
 		 *
 		 * @param request The processed HTTP request.
 		 * @param scriptPath The absolute or relative path to the script.
+		 * @param interpreter Path to the interpreter binary (e.g.,
+		 * /usr/bin/python3).
 		 * @return int The read-end File Descriptor of the output pipe, or -1 on
 		 * error.
 		 **/
 		int launchCgiProcess(const HttpRequest& request,
-							 const std::string& scriptPath);
+							 const std::string& scriptPath,
+							 const std::string& interpreter);
 
 		/**
 		 * @brief Returns the PID of the new child process.
 		 * @return pid_t The child's PID.
 		 */
-		pid_t getPid() const {
-			return _pid;
-		}
+		pid_t getPid() const { return _pid; }
 
 	private:
 		std::map<std::string, std::string> _env;
