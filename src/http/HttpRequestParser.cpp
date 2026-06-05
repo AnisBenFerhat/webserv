@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequestParser.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:08:17 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 15:44:03 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/04 11:38:53 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,9 @@ HttpRequestParser& HttpRequestParser::operator=(
 HttpRequestParser::~HttpRequestParser() {}
 
 HttpRequestParser::ParseResult HttpRequestParser::parse(
-	const std::vector<char>& buffer, HttpRequest& request) {
+	const std::vector<char>& buffer, HttpRequest& request, std::size_t& bytesParsed) {
+
+	bytesParsed = 0;
 	std::string raw(buffer.begin(), buffer.end());
 
 	const std::string separator	   = "\r\n\r\n";
@@ -57,16 +59,16 @@ HttpRequestParser::ParseResult HttpRequestParser::parse(
 				return ERROR;
 		}
 	}
-
+	std::size_t expectedLength = 0;
 	std::string contentLengthStr = request.getHeader("Content-Length");
 	if (!contentLengthStr.empty()) {
-		size_t expectedLength =
+		expectedLength =
 			static_cast<size_t>(std::atoi(contentLengthStr.c_str()));
 		if (body.size() < expectedLength)
 			return INCOMPLETE;
 		request.appendToBody(body.substr(0, expectedLength));
 	}
-
+	bytesParsed = separatorPos +separator.size() + expectedLength;
 	return COMPLETE;
 }
 

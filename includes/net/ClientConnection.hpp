@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientConnection.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/03 15:18:02 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/04 13:42:00 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class ClientConnection : public RefCounter {
 		const ServerBlock* _serverBlk;	///< @brief Retrieve packet size infos.
 		Poller*			   _poller;	 ///< @brief Sending orders to the Poller.
 		ConnectionState	   _status;	 ///< @brief Actual state of the request.
+		std::size_t		   _writeOffset;
 };
 
 #endif
