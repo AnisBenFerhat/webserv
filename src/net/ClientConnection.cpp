@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/03 16:35:51 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/05 16:01:32 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,62 +73,76 @@ bool ClientConnection::_receiveToBuffer() {
 }
 
 void ClientConnection::_processHttpRequest() {
-	HttpRequest					   request;
-	HttpRequestParser::ParseResult result =
-		HttpRequestParser::parse(_readBuffer, request);
+	while(!_readBuffer.empty()) {
+		HttpRequest					   request;
+		std::size_t					   bytesParsed = 0;
+		HttpRequestParser::ParseResult result =
+			HttpRequestParser::parse(_readBuffer, request, bytesParsed);
 
-	if (result == HttpRequestParser::INCOMPLETE) {
-		Logger::logInfo(
-			"Partial request on FD: " + Convertor::intToStr(_fd->getRawFd()) +
-			" — waiting for more data");
-		return;
+		if (result == HttpRequestParser::INCOMPLETE) {
+			Logger::logInfo(
+				"Partial request on FD: " + Convertor::intToStr(_fd->getRawFd()) +
+				" — waiting for more data");
+			break;
+		}
+
+		if (result == HttpRequestParser::ERROR) {
+			Logger::logWarning("Malformed HTTP request on FD: " +
+							Convertor::intToStr(_fd->getRawFd()));
+			_sendBadRequest();
+			_readBuffer.clear();
+			return;
+		}
+
+		if (!_serverBlk) {
+			Logger::logError("No ServerBlock attached to FD: " +
+							Convertor::intToStr(_fd->getRawFd()));
+			_status = Closing;
+			_poller->removeClient(_fd->getRawFd());
+			return;
+		}
+
+		const std::string& hostHeader = request.getHeader("Host");
+		const Config*	   config	  = _serverBlk->getConfigForHost(hostHeader);
+
+		if (!config) {
+			Logger::logWarning("No config found for host: [" + hostHeader + "]");
+			_status = Closing;
+			_poller->removeClient(_fd->getRawFd());
+			return;
+		}
+
+		const LocationBlock* location =
+			RequestRouter::matchLocation(*config, request);
+
+		HttpResponse response;
+
+		if (!location) {
+			Logger::logWarning("No location matched URI: [" + request.getPath() +
+							"]");
+			response = generateErrorResponse(HTTP_404_NOT_FOUND, *config);
+		} else {
+			response = Dispatcher::dispatch(request, *location, *config);
+		}
+
+		std::string serialized = response.serialize();
+		_writeBuffer.insert(_writeBuffer.end(), serialized.begin(),
+							serialized.end());
+
+		_readBuffer.erase(_readBuffer.begin(), _readBuffer.begin() + bytesParsed);
+		if (request.getHeader("Connection") == "close" ||
+			response.getHeader("Connection") == "close") {
+			_status = Closing;
+		} else {
+			_status = KeepAliveWait;
+		}
 	}
-
-	if (result == HttpRequestParser::ERROR) {
-		Logger::logWarning("Malformed HTTP request on FD: " +
-						   Convertor::intToStr(_fd->getRawFd()));
-		_sendBadRequest();
-		return;
+	if (!_writeBuffer.empty()) {
+		if (_status != Closing) {
+			_status = WritingResponse;
+		}
+		_poller->setEvents(_fd->getRawFd(), POLLOUT);
 	}
-
-	if (!_serverBlk) {
-		Logger::logError("No ServerBlock attached to FD: " +
-						 Convertor::intToStr(_fd->getRawFd()));
-		_status = Closing;
-		_poller->removeClient(_fd->getRawFd());
-		return;
-	}
-
-	const std::string& hostHeader = request.getHeader("Host");
-	const Config*	   config	  = _serverBlk->getConfigForHost(hostHeader);
-
-	if (!config) {
-		Logger::logWarning("No config found for host: [" + hostHeader + "]");
-		_status = Closing;
-		_poller->removeClient(_fd->getRawFd());
-		return;
-	}
-
-	const LocationBlock* location =
-		RequestRouter::matchLocation(*config, request);
-
-	HttpResponse response;
-
-	if (!location) {
-		Logger::logWarning("No location matched URI: [" + request.getPath() +
-						   "]");
-		response = generateErrorResponse(HTTP_404_NOT_FOUND, *config);
-	} else {
-		response = Dispatcher::dispatch(request, *location, *config);
-	}
-
-	std::string serialized = response.serialize();
-	_writeBuffer.insert(_writeBuffer.end(), serialized.begin(),
-						serialized.end());
-	_readBuffer.clear();
-
-	_status = WritingResponse;
-	_poller->setEvents(_fd->getRawFd(), POLLOUT);
 }
 
 void ClientConnection::_sendBadRequest() {
@@ -146,22 +160,26 @@ void ClientConnection::_sendBadRequest() {
 }
 
 void ClientConnection::handleWrite() {
-	if (_status == Closing || _writeBuffer.empty()) {
+	if (_writeBuffer.empty()) {
 		_poller->setEvents(_fd->getRawFd(), POLLIN);
 		return;
 	}
-	std::size_t total = 0;
-	while (total < _writeBuffer.size()) {
-		std::size_t remaining = _writeBuffer.size() - total;
-		std::size_t toSend	  = remaining < 4096 ? remaining : 4096;
 
-		int bytesSent = send(_fd->getRawFd(), &_writeBuffer[total], toSend, 0);
+	bool yieldToPoll = false;
+
+	while (_writeOffset < _writeBuffer.size()) {
+		std::size_t remaining = _writeBuffer.size() - _writeOffset;
+		std::size_t toSend	  = remaining < 65536 ? remaining : 65536;
+
+		int bytesSent = send(_fd->getRawFd(), &_writeBuffer[_writeOffset], toSend, 0);
 		if (bytesSent < 0) {
 			int logErrno = errno;
 			if (logErrno == EAGAIN || logErrno == EWOULDBLOCK) {
 				_writeBuffer.erase(_writeBuffer.begin(),
-								   _writeBuffer.begin() + total);
-				return;
+								   _writeBuffer.begin() + _writeOffset);
+				_writeOffset = 0;
+				yieldToPoll = true;
+				break;
 			}
 			Logger::logWarning("Failed while writing into socket FD: " +
 							   Convertor::intToStr(_fd->getRawFd()) + " - " +
@@ -173,18 +191,35 @@ void ClientConnection::handleWrite() {
 		if (bytesSent == 0) {
 			Logger::logWarning("No bytes sent on FD: " +
 							   Convertor::intToStr(_fd->getRawFd()));
+			_status = Closing;
+			_poller->removeClient(_fd->getRawFd());
+			return;
+		}
+		_writeOffset += static_cast<std::size_t>(bytesSent);
+		if (static_cast<std::size_t>(bytesSent) < toSend) {
+			yieldToPoll = true;
 			break;
 		}
-		total += static_cast<std::size_t>(bytesSent);
 		Logger::logInfo("Successfully sent packet into socket FD: " +
 						Convertor::intToStr(_fd->getRawFd()));
 	}
-	_writeBuffer.erase(_writeBuffer.begin(), _writeBuffer.begin() + total);
-	if (_writeBuffer.empty()) {
+	if (yieldToPoll) {
+		_writeBuffer.erase(_writeBuffer.begin(), _writeBuffer.begin() + _writeOffset);
+		_writeOffset = 0;
+		_poller->setEvents(_fd->getRawFd(), POLLOUT);
+	}
+	else if (_writeOffset >= _writeBuffer.size()) {
+		_writeBuffer.clear();
+		_writeOffset = 0;
 		if (_status == KeepAliveWait) {
-			_poller->setEvents(_fd->getRawFd(), POLLIN | POLLOUT);
+			_status = InitialState;
+			_poller->setEvents(_fd->getRawFd(), POLLIN);
+			Logger::logInfo("Response fully sent on FD: " +
+							Convertor::intToStr(_fd->getRawFd()));
 		} else {
-			_status = Closing;
+			Logger::logInfo("Response fully sent on FD: " +
+							Convertor::intToStr(_fd->getRawFd()) +
+							" - Closing connection.");
 			_poller->removeClient(_fd->getRawFd());
 		}
 	}
@@ -201,7 +236,8 @@ ClientConnection::ClientConnection()
 	  _fd(NULL),
 	  _serverBlk(NULL),
 	  _poller(NULL),
-	  _status(InitialState) {}
+	  _status(InitialState),
+	  _writeOffset(0) {}
 
 ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 								   Poller* poller)
@@ -209,7 +245,8 @@ ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 	  _fd(fd),
 	  _serverBlk(serverBlk),
 	  _poller(poller),
-	  _status(InitialState) {
+	  _status(InitialState),
+	  _writeOffset(0) {
 	if (!_fd)
 		Logger::logError("ClientConnection: null Fd pointer");
 	if (!_serverBlk)

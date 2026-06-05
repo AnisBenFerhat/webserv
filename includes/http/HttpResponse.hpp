@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 11:25:23 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/25 18:03:49 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/05 15:36:12 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ class HttpResponse {
 		const std::string& getBody() const {
 			return _body;
 		};
+
+		std::string getHeader(const std::string& key) const;
 
 		// Setters
 		void setStatus(HttpStatus status) {

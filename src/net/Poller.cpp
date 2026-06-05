@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:34 by elkanega          #+#    #+#             */
-/*   Updated: 2026/06/02 14:04:43 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/05 15:56:22 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,40 +52,43 @@ int Poller::acceptTcpConnection(int socketFd, struct sockaddr* client_addr,
 	int clientFd = accept(socketFd, client_addr, &client_len);
 
 	if (clientFd < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			return -1;
+		}
 		Logger::logWarning("Socket FD [" + Convertor::intToStr(socketFd) +
 						   "] failed accepting an entering connection: " +
 						   std::string(strerror(errno)));
 		return -1;
-	} else {
-		Logger::logInfo("Socket FD [" + Convertor::intToStr(socketFd) +
-						"] accepted a new connection [" +
-						Convertor::intToStr(clientFd) + "]");
 	}
+	Logger::logInfo("Socket FD [" + Convertor::intToStr(socketFd) +
+					"] accepted a new connection [" +
+					Convertor::intToStr(clientFd) + "]");
 	return clientFd;
 }
 
 void Poller::acceptNewConnection(int socketFd, const ServerBlock* serverBlk) {
-	struct sockaddr_in clientAddr;
-	socklen_t		   clientLen = sizeof(clientAddr);
-	std::memset(&clientAddr, 0, sizeof(clientAddr));
+	while (true) {
+		struct sockaddr_in clientAddr;
+		socklen_t		   clientLen = sizeof(clientAddr);
+		std::memset(&clientAddr, 0, sizeof(clientAddr));
 
-	int clientFd = acceptTcpConnection(
-		socketFd, reinterpret_cast<struct sockaddr*>(&clientAddr), clientLen);
-	if (clientFd < 0) {
-		return;
+		int clientFd = acceptTcpConnection(
+			socketFd, reinterpret_cast<struct sockaddr*>(&clientAddr), clientLen);
+		if (clientFd < 0) {
+			return;
+		}
+
+		Fd*	heapFd = new Fd(clientFd);
+		if (heapFd->getRawFd() < 0) {
+			delete heapFd;
+			return;
+		}
+
+		ClientConnection* newConnection = new ClientConnection(heapFd,
+										serverBlk, this);
+		this->addFd(clientFd, POLLIN);
+		this->getLookupTable().insertClient(clientFd, newConnection);
 	}
-
-	Fd*	heapFd = new Fd(clientFd);
-	if (heapFd->getRawFd() < 0) {
-		delete heapFd;
-		return;
-	}
-
-	ClientConnection* newConnection = new ClientConnection(heapFd,
-									  serverBlk, this);
-
-	this->addFd(clientFd, POLLIN);
-	this->getLookupTable().insertClient(clientFd, newConnection);
 }
 
 void Poller::initPoller(const std::vector<ServerBlock*>& serverBlocks) {
@@ -175,12 +178,24 @@ int Poller::pollEvents(int timeout) {
 }
 
 void Poller::dispatchActivity() {
-	for (std::size_t i = _fds.size(); i > 0; --i) {
-		std::size_t idx = i - 1;
-
-		if (_fds[idx].revents != 0) {
-			handleFdActivity(_fds[idx].fd, _fds[idx].revents);
+	std::vector<struct pollfd> activeFds;
+	for (std::size_t i = 0; i < _fds.size(); ++i) {
+		if (_fds[i].revents != 0) {
+			activeFds.push_back(_fds[i]);
 		}
+	}
+
+	for (std::size_t i = 0; i < activeFds.size(); ++i) {
+		int fd = activeFds[i].fd;
+		short revents = activeFds[i].revents;
+		if (_lookupTable.getServerBlkIt(fd) == _lookupTable.getServerBlkEndIt() &&
+			_lookupTable.getCgiPipeIt(fd) == _lookupTable.getCgiPipeEndIt() &&
+			_lookupTable.getClientIt(fd) == _lookupTable.getClientEndIt()) {
+			Logger::logInfo("Skipping destroyed FD [" +
+							 Convertor::intToStr(fd) + "] during dispatch");
+			continue;
+		}
+		handleFdActivity(fd, revents);
 	}
 }
 
@@ -229,9 +244,9 @@ void Poller::removeFd(int fd) {
 			if (iter != _fds.end() - 1) {
 				*iter = _fds.back();
 			}
-			// Logger::logInfo("Socket removed from the Poller [" +
-			// 				Convertor::intToStr(fd) + "] (" +
-			// 				Convertor::eventsToStr(iter->events) + ")");
+			Logger::logInfo("Socket removed from the Poller [" +
+							Convertor::intToStr(fd) + "] (" +
+							Convertor::eventsToStr(iter->events) + ")");
 			_fds.pop_back();
 			return;
 		}

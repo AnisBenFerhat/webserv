@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequestParser.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:07:52 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 13:46:14 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/04 11:39:41 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ class HttpRequestParser {
 		 * @return COMPLETE, INCOMPLETE, or ERROR.
 		 */
 		static ParseResult parse(const std::vector<char>& buffer,
-								 HttpRequest&			  request);
+								 HttpRequest&			  request,
+								 std::size_t&			  bytesParsed);
 
 	private:
 		static bool _parseRequestLine(const std::string& line,
