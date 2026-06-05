@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 11:26:03 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/25 18:03:48 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/05 15:36:35 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,15 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& other) {
 }
 
 HttpResponse::~HttpResponse() {}
+
+std::string HttpResponse::getHeader(const std::string& key) const {
+	std::map<std::string, std::string>::const_iterator iter =
+		_headers.find(key);
+	if (iter != _headers.end()) {
+		return iter->second;
+	}
+	return "";
+}
 
 std::string HttpResponse::serialize() const {
 	std::ostringstream osstream;

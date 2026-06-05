@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:08:17 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/04 11:38:53 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/05 14:53:00 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ HttpRequestParser::ParseResult HttpRequestParser::parse(
 			return INCOMPLETE;
 		request.appendToBody(body.substr(0, expectedLength));
 	}
-	bytesParsed = separatorPos +separator.size() + expectedLength;
+	bytesParsed = separatorPos + separator.size() + expectedLength;
 	return COMPLETE;
 }
 

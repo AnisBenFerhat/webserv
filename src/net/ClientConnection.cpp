@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/05 10:35:31 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/05 16:01:32 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,8 @@ void ClientConnection::_processHttpRequest() {
 							serialized.end());
 
 		_readBuffer.erase(_readBuffer.begin(), _readBuffer.begin() + bytesParsed);
-		if (request.getHeader("Connection") == "close") {
+		if (request.getHeader("Connection") == "close" ||
+			response.getHeader("Connection") == "close") {
 			_status = Closing;
 		} else {
 			_status = KeepAliveWait;
