@@ -192,9 +192,9 @@
 				<span class="method-badge badge-delete">DELETE</span>
 				<div class="method-title">Remove a resource</div>
 				<div class="method-desc">
-					Requests the server to delete a resource. Webserv verifies
-					path traversal safety via realpath() and checks permissions
-					before calling unlink() on the target file.
+					The server verifies path traversal safety by rejecting any URI containing ".."
+					sequences, then checks file permissions via access() before calling unlink()
+					on the target file.
 				</div>
 				<div class="code-block">
 					<span class="c-green">DELETE</span> /upload/file.txt HTTP/1.1<br>

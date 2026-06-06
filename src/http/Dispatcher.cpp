@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:08:10 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 14:54:58 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/06 10:46:35 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,30 @@
 #include "cgi/CgiResponseParser.hpp"
 #include "errors/ErrorPageGenerator.hpp"
 #include "http/AutoindexHandler.hpp"
+#include "http/DeleteHandler.hpp"
 #include "http/HttpStatus.hpp"
 #include "http/StaticFileHandler.hpp"
+#include "http/UploadHandler.hpp"
 #include "utils/Logger.hpp"
 
-HttpResponse Dispatcher::dispatch(const HttpRequest&   request,
+HttpResponse Dispatcher::dispatch(const HttpRequest& request,
 								  const LocationBlock& location,
-								  const Config&		   config) {
+								  const Config& config) {
 	if (!location.getMethods().empty() &&
 		!_isMethodAllowed(request, location)) {
 		Logger::logWarning("405 — method [" + request.getMethodString() +
 						   "] not allowed on [" + location.getPath() + "]");
 		return _generateError(HTTP_405_METHOD_NOT_ALLOWED, config);
+	}
+
+	if (request.getMethod() == HTTP_POST && !location.getUploadDir().empty()) {
+		UploadHandler handler(config, location);
+		return handler.createResponse(request);
+	}
+
+	if (request.getMethod() == HTTP_DELETE) {
+		DeleteHandler handler(config, location);
+		return handler.createResponse(request);
 	}
 
 	std::string fullPath = _resolvePath(request, location);
@@ -61,10 +73,10 @@ HttpResponse Dispatcher::dispatch(const HttpRequest&   request,
 	return _generateError(HTTP_403_FORBIDDEN, config);
 }
 
-bool Dispatcher::_isMethodAllowed(const HttpRequest&   request,
+bool Dispatcher::_isMethodAllowed(const HttpRequest& request,
 								  const LocationBlock& location) {
 	const std::vector<std::string>& methods = location.getMethods();
-	const std::string&				method	= request.getMethodString();
+	const std::string& method = request.getMethodString();
 	for (size_t i = 0; i < methods.size(); ++i) {
 		if (methods[i] == method)
 			return true;
@@ -72,7 +84,7 @@ bool Dispatcher::_isMethodAllowed(const HttpRequest&   request,
 	return false;
 }
 
-bool Dispatcher::_isCgiRequest(const std::string&	fullPath,
+bool Dispatcher::_isCgiRequest(const std::string& fullPath,
 							   const LocationBlock& location) {
 	const std::string& cgiExt = location.getCgiExtension();
 	if (cgiExt.empty())
@@ -90,11 +102,11 @@ std::string Dispatcher::_getExtension(const std::string& path) {
 	return path.substr(dotPos);
 }
 
-std::string Dispatcher::_resolvePath(const HttpRequest&	  request,
+std::string Dispatcher::_resolvePath(const HttpRequest& request,
 									 const LocationBlock& location) {
-	const std::string& root			= location.getRoot();
+	const std::string& root = location.getRoot();
 	const std::string& locationPath = location.getPath();
-	std::string		   uri			= request.getPath();
+	std::string uri = request.getPath();
 
 	size_t queryPos = uri.find('?');
 	if (queryPos != std::string::npos)
@@ -115,10 +127,17 @@ std::string Dispatcher::_resolvePath(const HttpRequest&	  request,
 	return fullPath;
 }
 
-HttpResponse Dispatcher::_dispatchDirectory(const std::string&	 fullPath,
-											const HttpRequest&	 request,
+HttpResponse Dispatcher::_dispatchDirectory(const std::string& fullPath,
+											const HttpRequest& request,
 											const LocationBlock& location,
-											const Config&		 config) {
+											const Config& config) {
+	if (request.getPath()[request.getPath().size() - 1] != '/') {
+		HttpResponse response;
+		response.setStatus(HTTP_301_MOVED_PERMANENTLY);
+		response.setHeader("Location", request.getPath() + "/");
+		return response;
+	}
+
 	const std::string& indexFile = location.getIndex();
 	if (!indexFile.empty()) {
 		std::string indexPath = fullPath;
@@ -146,10 +165,10 @@ HttpResponse Dispatcher::_dispatchFile(const std::string& fullPath) {
 	return handler.createResponse(fullPath);
 }
 
-HttpResponse Dispatcher::_dispatchCgi(const HttpRequest&   request,
+HttpResponse Dispatcher::_dispatchCgi(const HttpRequest& request,
 									  const LocationBlock& location,
-									  const std::string&   scriptPath,
-									  const Config&		   config) {
+									  const std::string& scriptPath,
+									  const Config& config) {
 	const std::string& interpreter = location.getCgiInterpreter();
 
 	if (interpreter.empty()) {
@@ -159,7 +178,7 @@ HttpResponse Dispatcher::_dispatchCgi(const HttpRequest&   request,
 	}
 
 	CgiHandler handler;
-	int		   outputPipeFd =
+	int outputPipeFd =
 		handler.launchCgiProcess(request, scriptPath, interpreter);
 
 	if (outputPipeFd < 0) {
@@ -168,8 +187,8 @@ HttpResponse Dispatcher::_dispatchCgi(const HttpRequest&   request,
 	}
 
 	std::string cgiOutput;
-	char		readBuffer[4096];
-	ssize_t		bytesRead;
+	char readBuffer[4096];
+	ssize_t bytesRead;
 	while ((bytesRead = read(outputPipeFd, readBuffer, sizeof(readBuffer))) > 0)
 		cgiOutput.append(readBuffer, static_cast<size_t>(bytesRead));
 	close(outputPipeFd);
@@ -186,7 +205,7 @@ HttpResponse Dispatcher::_dispatchCgi(const HttpRequest&   request,
 	return CgiResponseParser::createResponse(cgiOutput);
 }
 
-HttpResponse Dispatcher::_generateError(HttpStatus	  status,
+HttpResponse Dispatcher::_generateError(HttpStatus status,
 										const Config& config) {
 	ErrorPageGenerator generator(config);
 	return generator.createResponse(status);

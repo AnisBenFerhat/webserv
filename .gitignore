@@ -13,3 +13,6 @@ webserv
 .vscode/
 .idea/
 *.swp
+
+# Test
+*.txt
