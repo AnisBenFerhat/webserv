@@ -6,14 +6,17 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/15 15:04:26 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/21 15:48:08 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/07 12:48:53 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cgi/CgiResponseParser.hpp"
-#include "http/HttpResponse.hpp"
-#include <sstream>
+
 #include <map>
+#include <sstream>
+
+#include "http/HttpResponse.hpp"
+#include "utils/Convertor.hpp"
 
 HttpResponse CgiResponseParser::createResponse(
 	const std::string& rawCgiOutput) {
@@ -21,9 +24,9 @@ HttpResponse CgiResponseParser::createResponse(
 		return _makeBadGateway("CGI script produced no output");
 
 	size_t separatorLen = 4;
-	size_t separator	= rawCgiOutput.find("\r\n\r\n");
+	size_t separator = rawCgiOutput.find("\r\n\r\n");
 	if (separator == std::string::npos) {
-		separator	 = rawCgiOutput.find("\n\n");
+		separator = rawCgiOutput.find("\n\n");
 		separatorLen = 2;
 	}
 
@@ -31,11 +34,11 @@ HttpResponse CgiResponseParser::createResponse(
 		return _makeBadGateway("CGI output has no header/body separator");
 
 	std::string headerBlock = rawCgiOutput.substr(0, separator);
-	std::string body		= rawCgiOutput.substr(separator + separatorLen);
+	std::string body = rawCgiOutput.substr(separator + separatorLen);
 
 	std::map<std::string, std::string> cgiHeaders;
-	std::istringstream				   stream(headerBlock);
-	std::string						   line;
+	std::istringstream stream(headerBlock);
+	std::string line;
 
 	while (std::getline(stream, line)) {
 		if (!line.empty() && line[line.size() - 1] == '\r')
@@ -45,7 +48,8 @@ HttpResponse CgiResponseParser::createResponse(
 		if (colon == std::string::npos)
 			continue;
 
-		std::string key	  = line.substr(0, colon);
+		std::string key = line.substr(0, colon);
+		key = Convertor::toLowerCase(key);
 		std::string value = line.substr(colon + 1);
 
 		size_t start = value.find_first_not_of(" \t");
@@ -55,13 +59,13 @@ HttpResponse CgiResponseParser::createResponse(
 		cgiHeaders[key] = value;
 	}
 
-	if (cgiHeaders.find("Content-Type") == cgiHeaders.end())
+	if (cgiHeaders.find("content-type") == cgiHeaders.end())
 		return _makeBadGateway(
 			"CGI output missing mandatory Content-Type header");
 
-	HttpStatus										   status = HTTP_200_OK;
+	HttpStatus status = HTTP_200_OK;
 	std::map<std::string, std::string>::const_iterator iter =
-		cgiHeaders.find("Status");
+		cgiHeaders.find("status");
 	if (iter != cgiHeaders.end()) {
 		int code = _parseStatusCode(iter->second);
 
@@ -77,7 +81,7 @@ HttpResponse CgiResponseParser::createResponse(
 	for (std::map<std::string, std::string>::const_iterator header =
 			 cgiHeaders.begin();
 		 header != cgiHeaders.end(); ++header) {
-		if (header->first != "Status")
+		if (header->first != "status")
 			response.setHeader(header->first, header->second);
 	}
 
@@ -111,7 +115,7 @@ HttpResponse CgiResponseParser::_makeBadGateway(const std::string& reason) {
 
 int CgiResponseParser::_parseStatusCode(const std::string& statusValue) {
 	std::istringstream iss(statusValue);
-	int				   code = 0;
+	int code = 0;
 
 	if (!(iss >> code))
 		return -1;

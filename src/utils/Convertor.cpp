@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Convertor.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 16:31:10 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/25 17:37:52 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/07 12:36:19 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,18 @@ std::string Convertor::eventsToStr(short events) {
 
 	std::string str;
 
-	if (events & POLLIN) str += "POLLIN ";
-	if (events & POLLOUT) str += "POLLOUT ";
-	if (events & POLLHUP) str += "POLLHUP ";
-	if (events & POLLERR) str += "POLLERR ";
-	if (events & POLLNVAL) str += "POLLNVAL ";
-	if (events & POLLPRI) str += "POLLPRI ";
+	if (events & POLLIN)
+		str += "POLLIN ";
+	if (events & POLLOUT)
+		str += "POLLOUT ";
+	if (events & POLLHUP)
+		str += "POLLHUP ";
+	if (events & POLLERR)
+		str += "POLLERR ";
+	if (events & POLLNVAL)
+		str += "POLLNVAL ";
+	if (events & POLLPRI)
+		str += "POLLPRI ";
 
 	if (!str.empty() && str[str.size() - 1] == ' ') {
 		str.erase(str.size() - 1);
@@ -46,4 +52,11 @@ std::string Convertor::uIntToStr(unsigned int nbr) {
 	std::stringstream ss;
 	ss << nbr;
 	return ss.str();
+}
+
+std::string Convertor::toLowerCase(std::string str) {
+	for (size_t i = 0; i < str.length(); ++i) {
+		str[i] = std::tolower(str[i]);
+	}
+	return str;
 }
