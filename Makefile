@@ -34,6 +34,7 @@ SRCS = 	\
 		$(ERRORS_DIR)/ErrorPageGenerator.cpp \
 		$(ERRORS_DIR)/Exceptions.cpp \
 		$(HTTP_DIR)/AutoindexHandler.cpp \
+		$(HTTP_DIR)/DeleteHandler.cpp \
 		$(HTTP_DIR)/Dispatcher.cpp \
 		$(HTTP_DIR)/HttpRequest.cpp \
 		$(HTTP_DIR)/HttpRequestParser.cpp \
@@ -42,6 +43,7 @@ SRCS = 	\
 		$(HTTP_DIR)/MimeTypes.cpp \
 		$(HTTP_DIR)/RequestRouter.cpp \
 		$(HTTP_DIR)/StaticFileHandler.cpp \
+		$(HTTP_DIR)/UploadHandler.cpp \
 		$(NET_DIR)/ClientConnection.cpp \
 		$(NET_DIR)/Fd.cpp \
 		$(NET_DIR)/LookupTable.cpp \

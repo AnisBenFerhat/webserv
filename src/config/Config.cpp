@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 11:42:36 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 16:34:30 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/06 10:45:43 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,21 +37,21 @@ static std::string stripSemicolon(const std::string& string) {
 
 static std::string getKey(const std::string& line) {
 	std::istringstream iss(line);
-	std::string		   key;
+	std::string key;
 	iss >> key;
 	return key;
 }
 
 static std::string getValue(const std::string& line) {
 	std::istringstream iss(line);
-	std::string		   key, value;
+	std::string key, value;
 	iss >> key >> value;
 	return stripSemicolon(value);
 }
 
 // --- Parser Methods ---
 
-static LocationBlock parseLocationBlock(std::ifstream&	   configFile,
+static LocationBlock parseLocationBlock(std::ifstream& configFile,
 										const std::string& locationPath) {
 	LocationBlock location;
 	location.setPath(locationPath);
@@ -65,7 +65,7 @@ static LocationBlock parseLocationBlock(std::ifstream&	   configFile,
 		if (trimmedLine.empty() || trimmedLine[0] == '#')
 			continue;
 
-		std::string key	  = getKey(trimmedLine);
+		std::string key = getKey(trimmedLine);
 		std::string value = getValue(trimmedLine);
 
 		if (key == "root") {
@@ -78,9 +78,11 @@ static LocationBlock parseLocationBlock(std::ifstream&	   configFile,
 			location.setCgiExtension(value);
 		} else if (key == "cgi_interpreter") {
 			location.setCgiInterpreter(value);
+		} else if (key == "upload_dir") {
+			location.setUploadDir(value);
 		} else if (key == "allowed_methods") {
 			std::istringstream iss(trimmedLine);
-			std::string		   token;
+			std::string token;
 			iss >> token;
 			while (iss >> token) {
 				token = stripSemicolon(token);
@@ -95,9 +97,9 @@ static LocationBlock parseLocationBlock(std::ifstream&	   configFile,
 }
 
 std::vector<Config> Config::parseConfig(const std::string& configFilePath) {
-	std::ifstream		configFile(configFilePath.c_str());
-	std::string			lineBuffer;
-	Config				configTmp;
+	std::ifstream configFile(configFilePath.c_str());
+	std::string lineBuffer;
+	Config configTmp;
 	std::vector<Config> configs;
 
 	if (_openConfigFile(configFile, configFilePath) != ERR_NONE) {
@@ -121,12 +123,12 @@ std::vector<Config> Config::parseConfig(const std::string& configFilePath) {
 	return configs;
 }
 
-ErrorCode Config::_openConfigFile(std::ifstream&	configFile,
+ErrorCode Config::_openConfigFile(std::ifstream& configFile,
 								  const std::string configFilePath) {
 	if (!configFile.is_open()) {
 		std::string logMsg("Error while opening configuration file [" +
 						   configFilePath + "]: ");
-		int			errorMessage(errno);
+		int errorMessage(errno);
 
 		switch (errorMessage) {
 			case ENOENT:
@@ -153,12 +155,12 @@ ErrorCode Config::_parseServerConf(std::ifstream& configFile) {
 		if (trimmedLine.empty() || trimmedLine[0] == '#')
 			continue;
 
-		std::string key	  = getKey(trimmedLine);
+		std::string key = getKey(trimmedLine);
 		std::string value = getValue(trimmedLine);
 
 		if (key == "listen") {
 			std::istringstream iss(value);
-			int				   port;
+			int port;
 			if (iss >> port)
 				_port = port;
 			else
@@ -171,7 +173,7 @@ ErrorCode Config::_parseServerConf(std::ifstream& configFile) {
 			_defaultIndex = value;
 		} else if (key == "server_name") {
 			std::istringstream iss(trimmedLine);
-			std::string		   token;
+			std::string token;
 			iss >> token;
 			while (iss >> token) {
 				token = stripSemicolon(token);
@@ -180,7 +182,7 @@ ErrorCode Config::_parseServerConf(std::ifstream& configFile) {
 			}
 		} else if (key == "client_max_body_size") {
 			std::istringstream iss(value);
-			size_t			   size;
+			size_t size;
 			if (iss >> size)
 				_clientMaxBodySize = size;
 			else
@@ -188,12 +190,12 @@ ErrorCode Config::_parseServerConf(std::ifstream& configFile) {
 								   "]");
 		} else if (key == "error_page") {
 			std::istringstream iss(trimmedLine);
-			std::string		   token;
-			std::string		   path;
-			int				   code;
+			std::string token;
+			std::string path;
+			int code;
 			iss >> token;
 			if (iss >> code >> path) {
-				path			  = stripSemicolon(path);
+				path = stripSemicolon(path);
 				_errorPages[code] = path;
 			} else {
 				Logger::logWarning("Malformed error_page directive: [" +
@@ -201,8 +203,8 @@ ErrorCode Config::_parseServerConf(std::ifstream& configFile) {
 			}
 		} else if (key == "location") {
 			std::istringstream iss(trimmedLine);
-			std::string		   token;
-			std::string		   locationPath;
+			std::string token;
+			std::string locationPath;
 			iss >> token >> locationPath;
 			if (!locationPath.empty() &&
 				locationPath[locationPath.size() - 1] == '{')
@@ -257,7 +259,8 @@ Config::Config()
 	  _clientMaxBodySize(DEFAULT_MAX_BODY_SIZE),
 	  _host(""),
 	  _defaultRoot(""),
-	  _defaultIndex("") {}
+	  _defaultIndex("") {
+}
 
 Config::Config(const Config& other) {
 	*this = other;
@@ -265,16 +268,17 @@ Config::Config(const Config& other) {
 
 Config& Config::operator=(const Config& other) {
 	if (this != &other) {
-		_port			   = other._port;  ///< @brief [1024-65535] valid range.
+		_port = other._port;  ///< @brief [1024-65535] valid range.
 		_clientMaxBodySize = other._clientMaxBodySize;
-		_errorPages		   = other._errorPages;
-		_host			   = other._host;
-		_locations		   = other._locations;
-		_serverNames	   = other._serverNames;
-		_defaultRoot	   = other._defaultRoot;
-		_defaultIndex	   = other._defaultIndex;
+		_errorPages = other._errorPages;
+		_host = other._host;
+		_locations = other._locations;
+		_serverNames = other._serverNames;
+		_defaultRoot = other._defaultRoot;
+		_defaultIndex = other._defaultIndex;
 	}
 	return *this;
 }
 
-Config::~Config() {}
+Config::~Config() {
+}

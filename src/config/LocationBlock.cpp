@@ -6,15 +6,20 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/03 15:03:23 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 10:58:54 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/06 10:41:53 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "config/LocationBlock.hpp"
 
 LocationBlock::LocationBlock()
-	: _path(""), _root(""), _index(""), _autoindex(false), _cgiExtension(""),
-	_cgiInterpreter("") {
+	: _path(""),
+	  _root(""),
+	  _index(""),
+	  _autoindex(false),
+	  _cgiExtension(""),
+	  _cgiInterpreter(""),
+	  _uploadDir("") {
 }
 
 LocationBlock::LocationBlock(const LocationBlock& other) {
@@ -30,6 +35,7 @@ LocationBlock& LocationBlock::operator=(const LocationBlock& other) {
 		_autoindex = other._autoindex;
 		_cgiExtension = other._cgiExtension;
 		_cgiInterpreter = other._cgiInterpreter;
+		_uploadDir = other._uploadDir;
 	}
 	return *this;
 }
