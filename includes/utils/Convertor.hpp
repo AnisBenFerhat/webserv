@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Convertor.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:41:49 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/25 17:33:05 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/07 12:53:02 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,13 @@ class Convertor {
 		 * @return std::string of the integer input.
 		 **/
 		static std::string uIntToStr(unsigned int nbr);
+
+		/** @brief Returns a lowercase copy of the input string.
+		 * Used for case-insensitive HTTP header comparison.
+		 * @param str Input string to convert.
+		 * @return A lowercase copy of the input string.
+		 */
+		static std::string toLowerCase(std::string str);
 
 	private:
 		Convertor();

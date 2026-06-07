@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/31 17:04:32 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/07 11:17:18 by aben-fer         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 
 #include <csignal>
 #include <cstring>
+#include <fstream>
 
 #include "errors/ErrorCode.hpp"
 #include "utils/Convertor.hpp"
@@ -41,6 +42,14 @@ void ServerManager::launch(const std::string& configFilePath) {
 void ServerManager::_init(const std::string& configFilePath) {
 	Logger::logPart("Initialization");
 	_configs = Config::parseConfig(configFilePath);
+
+	std::ofstream sessionFile("www/data/sessions.json");
+	if (sessionFile.is_open()) {
+		sessionFile << "{}\n";
+		sessionFile.close();
+		Logger::logInfo("Session cleared on startup");
+	}
+
 	Logger::logInfo("Total of server configuration(s) found [" +
 					Convertor::uIntToStr(_configs.size()) + "]");
 
@@ -87,7 +96,8 @@ void ServerManager::_stop() {
 	}
 }
 
-ServerManager::ServerManager() : _configs(), _serverBlocks() {}
+ServerManager::ServerManager() : _configs(), _serverBlocks() {
+}
 
 ServerManager::~ServerManager() {
 	for (size_t i = 0; i < _serverBlocks.size(); ++i) {
