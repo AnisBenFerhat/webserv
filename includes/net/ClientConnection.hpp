@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/10 11:10:34 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/10 16:05:23 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,14 @@ class ClientConnection : public RefCounter {
 		 */
 		Fd*  getCgiOut() const { return _cgiOut; };
 
+		/**
+		 * @brief Ends the CGI process and queues a 504 response if allowed
+		 * execution time was exceeded.
+		 * @param current Current time from time(NULL)
+		 * @param timeout max time allowed in seconds
+		 */
+		void _cgiTimeout(time_t current, int timeout);
+
 	private:
 		ClientConnection(const ClientConnection& other);
 		ClientConnection& operator=(const ClientConnection& other);
@@ -110,6 +118,8 @@ class ClientConnection : public RefCounter {
 		CgiHandler*		   _activeCgi;
 		std::string		   _cgiResponse;
 		bool			   _cgiProcessing;
+		time_t			   _cgiStart;
+		const Config*	   _config;
 };
 
 #endif

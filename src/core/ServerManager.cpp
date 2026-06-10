@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/09 19:55:35 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/10 15:53:08 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include "errors/ErrorCode.hpp"
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
+#include "net/ClientConnection.hpp"
 
 volatile std::sig_atomic_t g_keepRunning = 1;
 
@@ -70,6 +71,11 @@ void ServerManager::_serverLoop() {
 
 		if (activity > 0) {
 			_poller.dispatchActivity();
+		}
+		time_t current = time(NULL);
+		for (std::map<int, ClientConnection*>::const_iterator it = _poller.getLookupTable().getClientBeginIt();
+			it != _poller.getLookupTable().getClientEndIt(); ++it) {
+			it->second->_cgiTimeout(current, 5);
 		}
 
 		pid_t pidExited;

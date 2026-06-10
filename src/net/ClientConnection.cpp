@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/10 11:01:13 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/10 15:28:45 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,9 @@ void ClientConnection::_processHttpRequest() {
 						delete handler;
 					}
 					else {
+						_cgiStart = time(NULL);
+						_config = config;
+						Logger::logWarning("_cgiStart: " + Convertor::intToStr(_cgiStart));
 						this->setCgiFields(handler->getStdin(),
 										   handler->getStdout(),
 										   handler->getPid(),
@@ -297,9 +300,36 @@ void ClientConnection::_cleanupCgi() {
 	_cgiBuffer.clear();
 }
 
+void	ClientConnection::_cgiTimeout(time_t current, int timeout) {
+	if (_cgiPid < 0) {
+		return;
+	}
+	if (current - _cgiStart < timeout) {
+		return;
+	}
+	Logger::logWarning("CGI timeout: " + Convertor::intToStr(_fd->getRawFd()));
+	kill(_cgiPid, SIGKILL);
+	int status = 0;
+	waitpid(_cgiPid, &status, 0);
+	_cgiResponse.clear();
+	HttpResponse response = generateErrorResponse(HTTP_504_GATEWAY_TIMEOUT, *_config);
+	std::string serialized = response.serialize();
+	_writeBuffer.insert(_writeBuffer.end(), serialized.begin(), serialized.end());
+	_cgiProcessing = false;
+	_cleanupCgi();
+	if (_activeCgi) {
+		delete _activeCgi;
+		_activeCgi = NULL;
+	}
+	_status = WritingResponse;
+	_poller->setEvents(_fd->getRawFd(), POLLOUT);
+}
+
 void ClientConnection::cgiRead(int pipeFd) {
+	if (!_cgiProcessing) {
+		return;
+	}
 	Logger::logInfo("cgiRead() triggered on Pipe FD: " + Convertor::intToStr(pipeFd));
-	(void)pipeFd;
 	char buffer[4096];
 	if (!_cgiOut) {
 		return;
@@ -337,7 +367,6 @@ void ClientConnection::cgiRead(int pipeFd) {
 			delete _activeCgi;
 			_activeCgi = NULL;
 		}
-		_cgiProcessing = false;
 		_status = WritingResponse;
 		_poller->setEvents(_fd->getRawFd(), POLLOUT);
 		Logger::logInfo("CGI script execution completed for client FD: " +
@@ -351,6 +380,9 @@ void ClientConnection::cgiRead(int pipeFd) {
 }
 
 void	ClientConnection::cgiWrite(int pipeFd) {
+	if (!_cgiProcessing) {
+		return;
+	}
 	if (_cgiBuffer.empty()) {
 		_poller->removeFd(pipeFd);
 		_poller->getLookupTable().removeFd(pipeFd);
@@ -401,7 +433,9 @@ ClientConnection::ClientConnection()
 	  _isKeepAlive(false),
 	  _writeOffset(0),
 	  _activeCgi(NULL),
-	  _cgiProcessing(false) {}
+	  _cgiProcessing(false),
+	  _cgiStart(0),
+	  _config(NULL) {}
 
 ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 								   Poller* poller)
@@ -416,7 +450,9 @@ ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 	  _isKeepAlive(false),
 	  _writeOffset(0),
 	  _activeCgi(NULL),
-	  _cgiProcessing(false) {
+	  _cgiProcessing(false),
+	  _cgiStart(0),
+	  _config(NULL) {
 	if (!_fd)
 		Logger::logError("ClientConnection: null Fd pointer");
 	if (!_serverBlk)
