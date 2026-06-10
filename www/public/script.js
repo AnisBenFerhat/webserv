@@ -42,7 +42,7 @@ function sendPost() {
 	const formData = new FormData();
 	formData.append('file', file, file.name);
 
-	fetch('/upload/' + file.name, { method: 'POST', body: formData })
+	fetch('/uploads/' + file.name, { method: 'POST', body: formData })
 		.then(function (res) {
 			return res.text().then(function (body) {
 				showResponse('post', res.status, body || '(empty body)');

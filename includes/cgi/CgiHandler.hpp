@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 14:08:13 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 16:31:13 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/10 11:17:05 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <string>
 
 #include "http/HttpRequest.hpp"
+#include "net/Fd.hpp"
 
 /**
  * @brief Manage CGI execution by preparing the environment and forking
@@ -55,9 +56,24 @@ class CgiHandler {
 		 */
 		pid_t getPid() const { return _pid; }
 
+		/**
+		 * @brief Returns read end of CGI stdout pipe
+		 * @return pointer to stdout Fd, or NULL if process not launched
+		 */
+		Fd*	  getStdout() const { return _outFd; }
+
+		/**
+		 * @brief Returns write end of CGI stdin pipe
+		 * @return pointer to stdin Fd or NULL if process not launched
+		 * or no stdin
+		 */
+		Fd*	  getStdin() const { return _inFd; }
+
 	private:
 		std::map<std::string, std::string> _env;
 		pid_t							   _pid;
+		Fd*								   _outFd;
+		Fd*								   _inFd;
 
 		void   _initEnv(const HttpRequest& request,
 						const std::string& scriptPath);

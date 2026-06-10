@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 14:08:21 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 15:37:53 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/09 19:23:53 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,17 +84,26 @@ int CgiHandler::launchCgiProcess(const HttpRequest& request,
 	close(pipeOut[1]);
 	close(pipeIn[0]);
 
-	const std::string& body = request.getBody();
-	if (!body.empty()) {
-		ssize_t written = write(pipeIn[1], body.c_str(), body.size());
-		if (written == -1 || static_cast<size_t>(written) != body.size()) {
-			Logger::logWarning("Incomplete write to CGI stdin for script: [" +
-							   scriptPath + "]");
-		}
+	_outFd = new Fd(pipeOut[0]);
+	if (_outFd->getRawFd() < 0) {
+		delete _outFd;
+		_outFd = NULL;
+		close(pipeIn[1]);
+		Logger::logError("O_NONBLOCK failed on CGI stdout pipe.");
+		return -1;
 	}
-	close(pipeIn[1]);
 
-	return pipeOut[0];
+	_inFd = new Fd(pipeIn[1]);
+	if (_inFd->getRawFd() < 0) {
+		delete _inFd;
+		_inFd = NULL;
+		delete _outFd;
+		_outFd = NULL;
+		Logger::logError("O_NONBLOCK failed on CGI stdin pipe.");
+		return -1;
+	}
+
+	return _outFd->getRawFd();
 }
 
 void CgiHandler::_initEnv(const HttpRequest& request,

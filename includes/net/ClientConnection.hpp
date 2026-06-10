@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/04 13:42:00 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/10 16:05:23 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include <vector>
 
@@ -23,6 +24,7 @@
 #include "net/Poller.hpp"
 #include "net/TcpListener.hpp"
 #include "utils/RefCounter.hpp"
+#include "cgi/CgiHandler.hpp"
 
 enum ConnectionState {
 	InitialState,
@@ -49,7 +51,47 @@ class ClientConnection : public RefCounter {
 
 		void handleRead();		  ///< @brief When data is available to write.
 		void handleWrite();		  ///< @brief When socket is ready to send.
-		bool isTimedOut() const;  ///< @brief Timeout state boolean checker.
+
+		/**
+		 * @brief Binds CGI subprocess descriptors and request body to client
+		 * connection. Transfers ownership of pipe Fd objects and stores the
+		 * request body as CGI stdin write buffer.
+		 * @param cgiIn Write end of CGI stdin pipe
+		 * @param cgiOut Read end of CGI stdout pipe
+		 * @param cgiPid PID of forked CGI subprocess
+		 * @param body Raw request body to be written in CGI stdin pipe
+		 */
+		void setCgiFields(Fd* cgiIn, Fd* cgiOut,
+						  pid_t cgiPid,
+						  const std::string& body);
+
+		/**
+		 * @brief POLLIN activity on CGI stdout pipe
+		 */
+		void cgiRead(int pipeFd);
+
+		/**
+		 * @brief POLLOUT activity on CGI stdin pipe
+		 */
+		void cgiWrite(int pipeFd);
+
+		/**
+		 * @brief returns CGI stdin pipe owned by this connection
+		 */
+		Fd*  getCgiIn() const { return _cgiIn; };
+
+		/**
+		 * @brief returns CGI stdout pipe owned by this connection
+		 */
+		Fd*  getCgiOut() const { return _cgiOut; };
+
+		/**
+		 * @brief Ends the CGI process and queues a 504 response if allowed
+		 * execution time was exceeded.
+		 * @param current Current time from time(NULL)
+		 * @param timeout max time allowed in seconds
+		 */
+		void _cgiTimeout(time_t current, int timeout);
 
 	private:
 		ClientConnection(const ClientConnection& other);
@@ -59,14 +101,25 @@ class ClientConnection : public RefCounter {
 		void _processHttpRequest();	 ///< @brief Parses, routes, and dispatches
 									 ///< the request.
 		void _sendBadRequest();		 ///< @brief Utility to send a 400 error.
+		void _cleanupCgi();
 
 		std::vector<char>  _readBuffer;	  ///< @brief Storing the request.
 		std::vector<char>  _writeBuffer;  ///< @brief Storing the response.
 		Fd*				   _fd;
+		Fd*				   _cgiIn;
+		Fd*				   _cgiOut;
+		pid_t			   _cgiPid;
 		const ServerBlock* _serverBlk;	///< @brief Retrieve packet size infos.
 		Poller*			   _poller;	 ///< @brief Sending orders to the Poller.
 		ConnectionState	   _status;	 ///< @brief Actual state of the request.
+		bool			   _isKeepAlive;
 		std::size_t		   _writeOffset;
+		std::string		   _cgiBuffer;
+		CgiHandler*		   _activeCgi;
+		std::string		   _cgiResponse;
+		bool			   _cgiProcessing;
+		time_t			   _cgiStart;
+		const Config*	   _config;
 };
 
 #endif

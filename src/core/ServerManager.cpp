@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/07 11:17:18 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/10 15:53:08 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include <csignal>
 #include <cstring>
@@ -24,6 +25,7 @@
 #include "errors/ErrorCode.hpp"
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
+#include "net/ClientConnection.hpp"
 
 volatile std::sig_atomic_t g_keepRunning = 1;
 
@@ -69,6 +71,18 @@ void ServerManager::_serverLoop() {
 
 		if (activity > 0) {
 			_poller.dispatchActivity();
+		}
+		time_t current = time(NULL);
+		for (std::map<int, ClientConnection*>::const_iterator it = _poller.getLookupTable().getClientBeginIt();
+			it != _poller.getLookupTable().getClientEndIt(); ++it) {
+			it->second->_cgiTimeout(current, 5);
+		}
+
+		pid_t pidExited;
+		int status;
+		while ((pidExited = waitpid(-1, &status, WNOHANG)) > 0) {
+			Logger::logInfo("Reap child CGI process [PID: " +
+							Convertor::intToStr(pidExited) + "]");
 		}
 	}
 }

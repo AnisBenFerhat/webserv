@@ -139,7 +139,7 @@ function uploadFile(file) {
 	progressFill.style.width = '30%';
 	progressText.textContent = 'Uploading ' + file.name + '...';
 
-	const uploadPath = '/upload/' + file.name;
+	const uploadPath = '/uploads/' + file.name;
 	const startTime = Date.now();
 	const formData = new FormData();
 	formData.append('file', file, file.name);
@@ -173,7 +173,7 @@ function uploadFile(file) {
 // Delete
 
 function deleteFile(filename) {
-	const deletePath = '/upload/' + filename;
+	const deletePath = '/uploads/' + filename;
 	const startTime = Date.now();
 
 	fetch(deletePath, { method: 'DELETE' })

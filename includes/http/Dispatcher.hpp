@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Dispatcher.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:07:49 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 14:17:01 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/10 11:14:56 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,26 @@ class Dispatcher {
 									 const LocationBlock& location,
 									 const Config&		  config);
 
+		/**
+		 * @brief Determines if request path should be handled as a
+		 * CGI request
+		 * @param fullPath Absolute path
+		 * @param location Matched LocationBlock
+		 * @return true if request should be dispatched to CGI subprocess,
+		 * otherwise false
+		 */
+		static bool			_isCgiRequest(const std::string&   fullPath,
+										  const LocationBlock& location);
+
+		/**
+		 * @brief Resolves absolute file path for request URI against
+		 * location block.
+		 * @param request parsed HTTP request
+		 * @param location matched LocationBlock
+		 * @return absolute file path as a string
+		 */
+		static std::string	_resolvePath(const HttpRequest&	  request,
+										 const LocationBlock& location);
 	private:
 		Dispatcher();
 		Dispatcher(const Dispatcher& other);
@@ -50,11 +70,11 @@ class Dispatcher {
 
 		static bool			_isMethodAllowed(const HttpRequest&	  request,
 											 const LocationBlock& location);
-		static bool			_isCgiRequest(const std::string&   fullPath,
-										  const LocationBlock& location);
+		// static bool			_isCgiRequest(const std::string&   fullPath,
+		// 								  const LocationBlock& location);
 		static std::string	_getExtension(const std::string& path);
-		static std::string	_resolvePath(const HttpRequest&	  request,
-										 const LocationBlock& location);
+		// static std::string	_resolvePath(const HttpRequest&	  request,
+		// 								 const LocationBlock& location);
 		static HttpResponse _dispatchDirectory(const std::string&	fullPath,
 											   const HttpRequest&	request,
 											   const LocationBlock& location,
