@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:34 by elkanega          #+#    #+#             */
-/*   Updated: 2026/06/05 15:56:22 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/10 10:54:34 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,15 @@ void Poller::removeClient(int clientFd) {
 	}
 
 	ClientConnection* connectionPtr = clientIt->second;
+
+	if (connectionPtr->getCgiIn()) {
+		removeFd(connectionPtr->getCgiIn()->getRawFd());
+		_lookupTable.removeFd(connectionPtr->getCgiIn()->getRawFd());
+	}
+	if (connectionPtr->getCgiOut()) {
+		removeFd(connectionPtr->getCgiOut()->getRawFd());
+		_lookupTable.removeFd(connectionPtr->getCgiOut()->getRawFd());
+	}
 
 	_lookupTable.removeFd(clientFd);
 	removeFd(clientFd);
@@ -127,8 +136,16 @@ void Poller::handleFdActivity(int fd, short revents) {
 	if (CgiPipeIt != _lookupTable.getCgiPipeEndIt()) {
 		Logger::logInfo("Found corresponding CgiPipe to FD [" +
 						Convertor::intToStr(fd) + "]");
-		if (revents & POLLIN) {
-			CgiPipeIt->second->handleRead();
+
+		if (revents & (POLLIN | POLLHUP)) {
+			CgiPipeIt->second->cgiRead(fd);
+		}
+		else if (revents & POLLOUT) {
+			CgiPipeIt->second->cgiWrite(fd);
+		}
+		else if (revents & (POLLERR | POLLNVAL)) {
+			Logger::logError("Critical error detected on CGI pipe FD [" +
+							 Convertor::intToStr(fd) + "]");
 		}
 		return;
 	}
@@ -210,8 +227,7 @@ std::vector<int> Poller::getFds() const {
 	}
 	return ready;
 }
-//TODO
-//Will need to modify events flags when CGI pipes are active
+
 void Poller::setEvents(int fd, short events) {
 	if (fd < 0) {
 		Logger::logWarning("Invalid file descriptor.");

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/07 11:17:18 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/09 19:55:35 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include <csignal>
 #include <cstring>
@@ -69,6 +70,13 @@ void ServerManager::_serverLoop() {
 
 		if (activity > 0) {
 			_poller.dispatchActivity();
+		}
+
+		pid_t pidExited;
+		int status;
+		while ((pidExited = waitpid(-1, &status, WNOHANG)) > 0) {
+			Logger::logInfo("Reap child CGI process [PID: " +
+							Convertor::intToStr(pidExited) + "]");
 		}
 	}
 }

@@ -181,11 +181,11 @@
 					input via stdin.
 				</div>
 				<div class="code-block">
-					<span class="c-green">POST</span> /upload HTTP/1.1<br>
+					<span class="c-green">POST</span> /uploads HTTP/1.1<br>
 					<span class="c-yellow">Content-Type: multipart/form-data</span><br>
 					<br>
 					<span class="c-blue">&larr; 201 Created</span><br>
-					<span class="c-muted">Location: /upload/file.txt</span>
+					<span class="c-muted">Location: /uploads/file.txt</span>
 				</div>
 			</div>
 			<div class="method-card">
@@ -197,7 +197,7 @@
 					on the target file.
 				</div>
 				<div class="code-block">
-					<span class="c-green">DELETE</span> /upload/file.txt HTTP/1.1<br>
+					<span class="c-green">DELETE</span> /uploads/file.txt HTTP/1.1<br>
 					<span class="c-muted">Host: localhost:8080</span><br>
 					<br>
 					<span class="c-blue">&larr; 204 No Content</span>
@@ -245,7 +245,7 @@
 				</div>
 				<div class="demo-panel-body">
 					<label class="field-label">Path</label>
-					<input type="text" class="field-input" id="del-path" placeholder="/upload/filename.txt">
+					<input type="text" class="field-input" id="del-path" placeholder="/uploads/filename.txt">
 					<button class="demo-btn btn-delete" id="del-btn" onclick="sendDelete()">Send DELETE request</button>
 					<div class="demo-response" id="del-response"></div>
 				</div>
