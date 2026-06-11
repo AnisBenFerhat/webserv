@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:17:23 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/10 16:05:23 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/11 10:37:28 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <sys/types.h>
 
 #include <vector>
+#include <ctime>
 
 #include "config/ServerBlock.hpp"
 #include "net/Fd.hpp"
@@ -91,7 +92,17 @@ class ClientConnection : public RefCounter {
 		 * @param current Current time from time(NULL)
 		 * @param timeout max time allowed in seconds
 		 */
-		void _cgiTimeout(time_t current, int timeout);
+		void cgiTimeout(time_t current, int timeout);
+
+		/**
+		 * @return time_t last activity timestamp
+		 */
+		time_t getLastActive() { return _timeActive; };
+
+		/**
+		 * @brief Updates timestamp. Called at every successful I/O.
+		 */
+		void updateTimestamp() { _timeActive = time(NULL); };
 
 	private:
 		ClientConnection(const ClientConnection& other);
@@ -120,6 +131,7 @@ class ClientConnection : public RefCounter {
 		bool			   _cgiProcessing;
 		time_t			   _cgiStart;
 		const Config*	   _config;
+		time_t			   _timeActive;
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 15:55:34 by elkanega          #+#    #+#             */
-/*   Updated: 2026/06/10 10:54:34 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/11 13:26:47 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,6 @@
 #include "net/ClientConnection.hpp"
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
-
-// --- Specific Methods ---
 
 void Poller::removeClient(int clientFd) {
 	std::map<int, ClientConnection*>::const_iterator clientIt =
@@ -139,9 +137,15 @@ void Poller::handleFdActivity(int fd, short revents) {
 
 		if (revents & (POLLIN | POLLHUP)) {
 			CgiPipeIt->second->cgiRead(fd);
+			if (_lookupTable.getCgiPipeIt(fd) != _lookupTable.getCgiPipeEndIt()) {
+				CgiPipeIt->second->updateTimestamp();
+			}
 		}
 		else if (revents & POLLOUT) {
 			CgiPipeIt->second->cgiWrite(fd);
+			if (_lookupTable.getCgiPipeIt(fd) != _lookupTable.getCgiPipeEndIt()) {
+				CgiPipeIt->second->updateTimestamp();
+			}
 		}
 		else if (revents & (POLLERR | POLLNVAL)) {
 			Logger::logError("Critical error detected on CGI pipe FD [" +
@@ -165,8 +169,16 @@ void Poller::handleFdActivity(int fd, short revents) {
 
 		if (revents & POLLIN) {
 			clientIt->second->handleRead();
+			if (_lookupTable.getClientIt(fd) == _lookupTable.getClientEndIt()) {
+				return;
+			}
+			clientIt->second->updateTimestamp();
 		} else if (revents & POLLOUT) {
 			clientIt->second->handleWrite();
+			if (_lookupTable.getClientIt(fd) == _lookupTable.getClientEndIt()) {
+				return;
+			}
+			clientIt->second->updateTimestamp();
 		}
 		return;
 	}
@@ -215,8 +227,6 @@ void Poller::dispatchActivity() {
 		handleFdActivity(fd, revents);
 	}
 }
-
-// --- Getters / Setters ---
 
 std::vector<int> Poller::getFds() const {
 	std::vector<int> ready;
@@ -273,8 +283,6 @@ void Poller::clearTable() {
 	_fds.clear();
 	_lookupTable.clearTable();
 }
-
-// --- Constructors / Destructor ---
 
 Poller::Poller() {}
 

@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:56:21 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/31 17:04:50 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/11 13:24:18 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@
 class ServerManager {
 	public:
 		ServerManager();
-
 		~ServerManager();
 
 		/**
@@ -39,6 +38,11 @@ class ServerManager {
 		 * @param configFilePath Path to the server configuration file.
 		 */
 		void launch(const std::string& configFilePath);
+
+		/**
+		 * @brief Sweeps active client connections and removes the idle ones.
+		 */
+		void checkTimeouts();
 
 	private:
 		ServerManager(const ServerManager& other);
@@ -81,9 +85,11 @@ class ServerManager {
 		 */
 		static void _signalHandler(int signum);
 
-		std::vector<Config>		  _configs;
-		Poller					  _poller;
-		std::vector<ServerBlock*> _serverBlocks;
+		std::vector<Config>					_configs;
+		Poller								_poller;
+		std::vector<ServerBlock*>			_serverBlocks;
+		std::map<int, ClientConnection*>	_activeClients;
+		time_t								_maxIdleThreshold;
 };
 
 #endif
