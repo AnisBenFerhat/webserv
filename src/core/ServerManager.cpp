@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/11 13:16:17 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/12 11:04:33 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,13 +102,20 @@ void ServerManager::_serverLoop() {
 		if (activity > 0) {
 			_poller.dispatchActivity();
 		}
+		std::map<int, ClientConnection*> clientCopy(
+			_poller.getLookupTable().getClientBeginIt(),
+			_poller.getLookupTable().getClientEndIt());
 		time_t current = time(NULL);
 		for (std::map<int, ClientConnection*>::const_iterator it =
-			_poller.getLookupTable().getClientBeginIt();
-			it != _poller.getLookupTable().getClientEndIt(); ++it) {
-			it->second->cgiTimeout(current, 5);
-		}
+			clientCopy.begin();
+			it != clientCopy.end(); ++it) {
+				if (_poller.getLookupTable().getClientIt(it->first) ==
+					_poller.getLookupTable().getClientEndIt()) {
+					continue;
+				}
+				it->second->cgiTimeout(current, 5);
 
+		}
 		pid_t pidExited;
 		int status;
 		while ((pidExited = waitpid(-1, &status, WNOHANG)) > 0) {
