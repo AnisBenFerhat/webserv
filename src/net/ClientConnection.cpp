@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/10 15:28:45 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/11 13:26:51 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ void ClientConnection::handleRead() {
 	if (!_receiveToBuffer())
 		return;
 
+	updateTimestamp();
 	_processHttpRequest();
 }
 
@@ -243,6 +244,7 @@ void ClientConnection::handleWrite() {
 			return;
 		}
 		_writeOffset += static_cast<std::size_t>(bytesSent);
+		updateTimestamp();
 		if (static_cast<std::size_t>(bytesSent) < toSend) {
 			yieldToPoll = true;
 			break;
@@ -300,7 +302,7 @@ void ClientConnection::_cleanupCgi() {
 	_cgiBuffer.clear();
 }
 
-void	ClientConnection::_cgiTimeout(time_t current, int timeout) {
+void	ClientConnection::cgiTimeout(time_t current, int timeout) {
 	if (_cgiPid < 0) {
 		return;
 	}
@@ -375,6 +377,7 @@ void ClientConnection::cgiRead(int pipeFd) {
 	}
 	if (bytesRead > 0) {
 		_cgiResponse.append(buffer, static_cast<std::size_t>(bytesRead));
+		updateTimestamp();
 		return;
 	}
 }
@@ -408,6 +411,7 @@ void	ClientConnection::cgiWrite(int pipeFd) {
 	}
 	if (bytesWritten > 0) {
 		_cgiBuffer.erase(0, static_cast<std::size_t>(bytesWritten));
+		updateTimestamp();
 	}
 	if (_cgiBuffer.empty()) {
 		_poller->removeFd(pipeFd);
@@ -418,8 +422,6 @@ void	ClientConnection::cgiWrite(int pipeFd) {
 		}
 	}
 }
-
-// Constructors / Destructor
 
 ClientConnection::ClientConnection()
 	: RefCounter(),
@@ -435,7 +437,8 @@ ClientConnection::ClientConnection()
 	  _activeCgi(NULL),
 	  _cgiProcessing(false),
 	  _cgiStart(0),
-	  _config(NULL) {}
+	  _config(NULL),
+	  _timeActive(time(NULL)) {}
 
 ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 								   Poller* poller)
@@ -452,7 +455,8 @@ ClientConnection::ClientConnection(Fd* fd, const ServerBlock* serverBlk,
 	  _activeCgi(NULL),
 	  _cgiProcessing(false),
 	  _cgiStart(0),
-	  _config(NULL) {
+	  _config(NULL),
+	  _timeActive(time(NULL)) {
 	if (!_fd)
 		Logger::logError("ClientConnection: null Fd pointer");
 	if (!_serverBlk)
