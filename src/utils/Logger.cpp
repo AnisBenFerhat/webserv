@@ -6,7 +6,7 @@
 /*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 22:09:50 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/05/25 17:38:05 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/12 17:22:51 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void Logger::logInfo(const std::string& msg) {
 }
 
 void Logger::logWarning(const std::string& msg) {
-	std::cout << _yellow << "[WARNING] " << _reset << msg << std::endl;
+	std::cout << _yellow << "[WARN] " << _reset << msg << std::endl;
 }
 
 void Logger::logError(const std::string& msg) {

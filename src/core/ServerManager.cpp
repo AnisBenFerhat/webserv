@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/12 11:04:33 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/12 14:11:39 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,18 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include <csignal>
 #include <cstring>
 #include <fstream>
 
+#include "config/ConfigParser.hpp"
 #include "errors/ErrorCode.hpp"
+#include "net/ClientConnection.hpp"
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
-#include "net/ClientConnection.hpp"
 
 volatile std::sig_atomic_t g_keepRunning = 1;
 
@@ -45,12 +46,12 @@ void ServerManager::checkTimeouts() {
 	time_t current = time(NULL);
 
 	std::map<int, ClientConnection*> clientCopy(
-			_poller.getLookupTable().getClientBeginIt(),
-			_poller.getLookupTable().getClientEndIt());
+		_poller.getLookupTable().getClientBeginIt(),
+		_poller.getLookupTable().getClientEndIt());
 
 	std::map<int, ClientConnection*>::iterator it = clientCopy.begin();
 	while (it != clientCopy.end()) {
-		ClientConnection* client = it->second;
+		ClientConnection* client   = it->second;
 		int				  clientFd = it->first;
 
 		if (_poller.getLookupTable().getClientIt(clientFd) ==
@@ -72,8 +73,10 @@ void ServerManager::checkTimeouts() {
 }
 
 void ServerManager::_init(const std::string& configFilePath) {
-	Logger::logPart("Initialization");
-	_configs = Config::parseConfig(configFilePath);
+	Logger::logPart("Parsing of the .conf");
+	_configs = ConfigParser::parseConfig(configFilePath);
+	Logger::logInfo("Total of server configuration(s) found [" +
+					Convertor::uIntToStr(_configs.size()) + "]");
 
 	std::ofstream sessionFile("www/data/sessions.json");
 	if (sessionFile.is_open()) {
@@ -82,9 +85,7 @@ void ServerManager::_init(const std::string& configFilePath) {
 		Logger::logInfo("Session cleared on startup");
 	}
 
-	Logger::logInfo("Total of server configuration(s) found [" +
-					Convertor::uIntToStr(_configs.size()) + "]");
-
+	Logger::logPart("Initialization");
 	_serverBlocks = ServerBlock::initServerBlocks(_configs);
 	Logger::logInfo("Total of server(s) initialized [" +
 					Convertor::uIntToStr(_serverBlocks.size()) + "]");
@@ -107,17 +108,16 @@ void ServerManager::_serverLoop() {
 			_poller.getLookupTable().getClientEndIt());
 		time_t current = time(NULL);
 		for (std::map<int, ClientConnection*>::const_iterator it =
-			clientCopy.begin();
-			it != clientCopy.end(); ++it) {
-				if (_poller.getLookupTable().getClientIt(it->first) ==
-					_poller.getLookupTable().getClientEndIt()) {
-					continue;
-				}
-				it->second->cgiTimeout(current, 5);
-
+				 clientCopy.begin();
+			 it != clientCopy.end(); ++it) {
+			if (_poller.getLookupTable().getClientIt(it->first) ==
+				_poller.getLookupTable().getClientEndIt()) {
+				continue;
+			}
+			it->second->cgiTimeout(current, 5);
 		}
 		pid_t pidExited;
-		int status;
+		int	  status;
 		while ((pidExited = waitpid(-1, &status, WNOHANG)) > 0) {
 			Logger::logInfo("Reap child CGI process [PID: " +
 							Convertor::intToStr(pidExited) + "]");
@@ -149,8 +149,8 @@ void ServerManager::_stop() {
 	}
 }
 
-ServerManager::ServerManager() : _configs(), _serverBlocks(), _maxIdleThreshold(30) {
-}
+ServerManager::ServerManager()
+	: _configs(), _serverBlocks(), _maxIdleThreshold(30) {}
 
 ServerManager::~ServerManager() {
 	for (size_t i = 0; i < _serverBlocks.size(); ++i) {
