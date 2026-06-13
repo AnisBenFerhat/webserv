@@ -83,7 +83,6 @@ function logRequest(method, path, status, durationMs) {
 }
 
 // Files list
-// TODO - Will be populated from CGI at Ticket 29
 
 function renderFiles(files) {
 	const emptyState = document.getElementById('empty-state');
@@ -119,7 +118,7 @@ function refreshFiles() {
 		.then(function (res) { return res.json(); })
 		.then(function (data) { renderFiles(data.files); })
 		.catch(function () {
-			// TODO: Will be handled dynamically with the CGI Ticket 29
+			renderFiles([]);
 		});
 }
 
