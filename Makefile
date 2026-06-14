@@ -53,7 +53,6 @@ SRCS = 	\
 		$(NET_DIR)/TcpListener.cpp \
 		$(UTILS_DIR)/Checker.cpp \
 		$(UTILS_DIR)/Convertor.cpp \
-		$(UTILS_DIR)/RefCounter.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp
 
