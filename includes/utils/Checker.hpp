@@ -1,33 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   RefCounter.hpp                                     :+:      :+:    :+:   */
+/*   Checker.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/16 15:02:10 by flebrun           #+#    #+#             */
-/*   Updated: 2026/05/16 15:14:53 by flebrun          ###   ########.fr       */
+/*   Created: 2026/06/08 19:13:08 by flebrun           #+#    #+#             */
+/*   Updated: 2026/06/08 19:20:41 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef REFCOUNTER_HPP
-#define REFCOUNTER_HPP
+#ifndef CHECKER_HPP
+#define CHECKER_HPP
 
-class RefCounter {
-	private:
-		int _refCount;
+#include <string>
 
-	protected:
-		/// @brief Virtual destructor to ensure the derived class destructor
-		/// does its job safely
-		virtual ~RefCounter();
-
+class Checker {
 	public:
-		RefCounter();
-		RefCounter(const RefCounter& other);
-		RefCounter& operator=(const RefCounter& other);
-
-		void add_ref();
-		void release();
+		static bool isValidIntegerRange(const std::string& str, int min,
+										int max, int& outValue);
 };
+
 #endif

@@ -27,6 +27,8 @@ SRCS = 	\
 		$(CGI_DIR)/CgiHandler.cpp \
 		$(CGI_DIR)/CgiResponseParser.cpp \
 		$(CONFIG_DIR)/Config.cpp \
+		$(CONFIG_DIR)/ConfigParser.cpp \
+		$(CONFIG_DIR)/ParserUtils.cpp \
 		$(CONFIG_DIR)/LocationBlock.cpp \
 		$(CONFIG_DIR)/ServerBlock.cpp \
 		$(CORE_DIR)/ServerManager.cpp \
@@ -49,8 +51,8 @@ SRCS = 	\
 		$(NET_DIR)/LookupTable.cpp \
 		$(NET_DIR)/Poller.cpp \
 		$(NET_DIR)/TcpListener.cpp \
+		$(UTILS_DIR)/Checker.cpp \
 		$(UTILS_DIR)/Convertor.cpp \
-		$(UTILS_DIR)/RefCounter.cpp \
 		$(UTILS_DIR)/Logger.cpp \
 		main.cpp
 
