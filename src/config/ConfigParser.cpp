@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/08 15:36:35 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/13 18:46:11 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/15 14:01:51 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,8 +244,13 @@ void ConfigParser::_parseLocationBlock(Config &currentServer,
                                     "]");
                         }
                 } else if (key == "upload_dir") {
-                        location.setUploadDir(value);
-                        _sendLog("Upload directory set to [" + value + "]", 2);
+					if (access(value.c_str(), F_OK | W_OK) != 0) {
+						throw std::runtime_error(
+						"upload_dir [" + value +
+						"] doesn't exist or doesn't have writing permission");
+					}
+                    location.setUploadDir(value);
+                    _sendLog("Upload directory set to [" + value + "]", 2);
                 } else if (key == "cgi_extension") {
                         location.setCgiExtension(value);
                         _sendLog("CgiExtension set to [" + value + "]", 2);

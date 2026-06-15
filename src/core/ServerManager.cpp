@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/12 14:11:39 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/15 15:46:29 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,13 @@
 
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include <csignal>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 
@@ -73,6 +75,21 @@ void ServerManager::checkTimeouts() {
 }
 
 void ServerManager::_init(const std::string& configFilePath) {
+	struct stat uploadDir;
+	if (stat("www/uploads", &uploadDir) != 0) {
+		if (mkdir("www/uploads", 0755) != 0) {
+			Logger::logWarning("Failed to create www/uploads: " +
+								std::string(strerror(errno)));
+		}
+		else {
+			chmod("www/uploads", 0755);
+			Logger::logInfo("Created www/uploads successfully.");
+		}
+	}
+	else if (!S_ISDIR(uploadDir.st_mode)) {
+		Logger::logWarning("www/uploads exists, but it not a directory");
+	}
+
 	Logger::logPart("Parsing of the .conf");
 	_configs = ConfigParser::parseConfig(configFilePath);
 	Logger::logInfo("Total of server configuration(s) found [" +
@@ -114,7 +131,7 @@ void ServerManager::_serverLoop() {
 				_poller.getLookupTable().getClientEndIt()) {
 				continue;
 			}
-			it->second->cgiTimeout(current, 5);
+			it->second->cgiTimeout(current, 15);
 		}
 		pid_t pidExited;
 		int	  status;
@@ -136,8 +153,7 @@ void ServerManager::_run() {
 	} else {
 		Logger::logWarning(
 			"Webserv needs at least one server to run, exiting ...");
-		// Deactivated exit application to run consecutive tests
-		// exit(1);
+		exit(1);
 	}
 }
 

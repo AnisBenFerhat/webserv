@@ -58,6 +58,7 @@ nav {
 	background: rgba(245, 242, 235, 0.93);
 	backdrop-filter: blur(8px);
 	border-bottom: 1px solid var(--border);
+	width: 100%;
 }
 
 .nav-logo {
@@ -497,6 +498,7 @@ footer {
 	flex-wrap: wrap;
 	gap: 12px;
 	margin-top: 40px;
+	width: 100%;
 }
 
 .footer-logo {
@@ -541,5 +543,6 @@ footer {
 		padding: 24px;
 		flex-direction: column;
 		text-align: center;
+		width: 100%;
 	}
 }

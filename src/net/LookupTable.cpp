@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/14 13:14:29 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/02 09:18:21 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/15 15:40:05 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,6 @@ void LookupTable::clearTable() {
 		delete it->second;
 	}
 	_fdToClient.clear();
-	for (std::map<int, ClientConnection*>::const_iterator it = _fdToCgiPipe.begin();
-		it != _fdToCgiPipe.end(); ++it) {
-		delete it->second;
-	}
 	_fdToCgiPipe.clear();
 	_fdToServerBlk.clear();
 }
