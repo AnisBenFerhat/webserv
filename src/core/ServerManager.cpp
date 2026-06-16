@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/15 15:46:29 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/15 18:40:04 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,10 +80,6 @@ void ServerManager::_init(const std::string& configFilePath) {
 		if (mkdir("www/uploads", 0755) != 0) {
 			Logger::logWarning("Failed to create www/uploads: " +
 								std::string(strerror(errno)));
-		}
-		else {
-			chmod("www/uploads", 0755);
-			Logger::logInfo("Created www/uploads successfully.");
 		}
 	}
 	else if (!S_ISDIR(uploadDir.st_mode)) {
