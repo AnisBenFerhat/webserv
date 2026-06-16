@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:07:52 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/04 11:39:41 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/15 15:35:49 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class HttpRequestParser {
 								 std::size_t&			  bytesParsed);
 
 	private:
+		static std::string  _urlDecode(const std::string& src);
 		static bool _parseRequestLine(const std::string& line,
 									  HttpRequest&		 request);
 		static bool _parseHeaderLine(const std::string& line,

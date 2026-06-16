@@ -6,13 +6,14 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:08:17 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/05 14:53:00 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/15 15:36:20 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http/HttpRequestParser.hpp"
 #include <sstream>
 #include <cstdlib>
+#include <cstdio>
 
 HttpRequestParser::HttpRequestParser() {}
 
@@ -72,6 +73,30 @@ HttpRequestParser::ParseResult HttpRequestParser::parse(
 	return COMPLETE;
 }
 
+std::string HttpRequestParser::_urlDecode(const std::string& src) {
+	std::string result;
+	char c;
+	int i;
+
+	for (size_t pos = 0; pos < src.length(); ++pos) {
+		if (src[pos] == '%') {
+			if (pos + 2 < src.length()) {
+				std::sscanf(src.substr(pos + 1, 2).c_str(), "%x", &i);
+				c = static_cast<char>(i);
+				result += c;
+				pos += 2;
+			} else {
+				result += src[pos];
+			}
+		} else if (src[pos] == '+') {
+			result += ' ';
+		} else {
+			result += src[pos];
+		}
+	}
+	return result;
+}
+
 bool HttpRequestParser::_parseRequestLine(const std::string& line,
 										  HttpRequest&		 request) {
 	std::istringstream iss(line);
@@ -89,7 +114,7 @@ bool HttpRequestParser::_parseRequestLine(const std::string& line,
 	else
 		request.setMethod(HTTP_UNKNOWN);
 
-	request.setPath(path);
+	request.setPath(_urlDecode(path));
 	request.setProtocol(protocol);
 	return true;
 }

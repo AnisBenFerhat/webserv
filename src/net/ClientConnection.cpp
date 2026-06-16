@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/11 13:26:51 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/15 14:54:49 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,10 +156,6 @@ void ClientConnection::_processHttpRequest() {
                                         } else {
                                                 _cgiStart = time(NULL);
                                                 _config = config;
-                                                Logger::logWarning(
-                                                    "_cgiStart: " +
-                                                    Convertor::intToStr(
-                                                        _cgiStart));
                                                 this->setCgiFields(
                                                     handler->getStdin(),
                                                     handler->getStdout(),

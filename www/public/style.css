@@ -52,6 +52,7 @@ nav {
 	background: rgba(245, 242, 235, 0.93);
 	backdrop-filter: blur(8px);
 	border-bottom: 1px solid var(--border);
+	width: 100%
 }
 
 .nav-logo {
@@ -511,6 +512,7 @@ footer {
 	justify-content: space-between;
 	flex-wrap: wrap;
 	gap: 16px;
+	width: 100%
 }
 
 .footer-logo {
