@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
+/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/08 15:36:35 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/15 14:01:51 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/17 15:34:40 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 
 #include <sstream>
 
-#include "errors/Exceptions.hpp"
 #include "utils/Checker.hpp"
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"

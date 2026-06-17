@@ -16,3 +16,6 @@ webserv
 
 # Test
 *.txt
+
+# Previous session not cleared
+www/data/sessions.json

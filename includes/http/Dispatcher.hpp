@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Dispatcher.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
+/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:07:49 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/10 11:14:56 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/17 15:32:53 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,11 +70,7 @@ class Dispatcher {
 
 		static bool			_isMethodAllowed(const HttpRequest&	  request,
 											 const LocationBlock& location);
-		// static bool			_isCgiRequest(const std::string&   fullPath,
-		// 								  const LocationBlock& location);
 		static std::string	_getExtension(const std::string& path);
-		// static std::string	_resolvePath(const HttpRequest&	  request,
-		// 								 const LocationBlock& location);
 		static HttpResponse _dispatchDirectory(const std::string&	fullPath,
 											   const HttpRequest&	request,
 											   const LocationBlock& location,
