@@ -3,17 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   ServerBlock.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
+/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 17:11:46 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/03 13:20:41 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/17 15:36:11 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "config/ServerBlock.hpp"
+
+#include <map>
+
 #include "utils/Convertor.hpp"
 #include "utils/Logger.hpp"
-#include <map>
 
 std::vector<ServerBlock*> ServerBlock::initServerBlocks(
 	const std::vector<Config>& configs) {
@@ -30,7 +32,6 @@ std::vector<ServerBlock*> ServerBlock::initServerBlocks(
 			ServerBlock* newServerBlock = new ServerBlock(&configs[i]);
 
 			if (!newServerBlock->startNetwork(port)) {
-				// Clean up allocated blocks so far on failure to avoid leaks
 				for (size_t j = 0; j < serverBlocks.size(); ++j)
 					delete serverBlocks[j];
 				delete newServerBlock;
@@ -38,8 +39,6 @@ std::vector<ServerBlock*> ServerBlock::initServerBlocks(
 			}
 
 			portToIdx[port] = serverBlocks.size();
-			// 2. Push back the pointer. No copies are made, no destructors are
-			// fired!
 			serverBlocks.push_back(newServerBlock);
 		} else {
 			Logger::logInfo("Server configuration [" + Convertor::uIntToStr(i) +
@@ -65,11 +64,22 @@ bool ServerBlock::startNetwork(int port) {
 // --- Getters ---
 
 const Config* ServerBlock::getConfigForHost(const std::string& hostname) const {
+	std::string cleanHost = hostname;
+	size_t		colonPos  = cleanHost.find(':');
+	if (colonPos != std::string::npos) {
+		cleanHost = cleanHost.substr(0, colonPos);
+	}
+
+	for (size_t i = 0; i < cleanHost.length(); ++i) {
+		cleanHost[i] = std::tolower(static_cast<unsigned char>(cleanHost[i]));
+	}
+
 	for (size_t i = 0; i < _configsREF.size(); ++i) {
-		if (_configsREF[i]->hasServerBlockName(hostname)) {
+		if (_configsREF[i] && _configsREF[i]->hasServerBlockName(cleanHost)) {
 			return _configsREF[i];
 		}
 	}
+
 	return _configsREF.empty() ? NULL : _configsREF[0];
 }
 

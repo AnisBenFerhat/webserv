@@ -34,7 +34,6 @@ SRCS = 	\
 		$(CORE_DIR)/ServerManager.cpp \
 		$(ERRORS_DIR)/ErrorCode.cpp \
 		$(ERRORS_DIR)/ErrorPageGenerator.cpp \
-		$(ERRORS_DIR)/Exceptions.cpp \
 		$(HTTP_DIR)/AutoindexHandler.cpp \
 		$(HTTP_DIR)/DeleteHandler.cpp \
 		$(HTTP_DIR)/Dispatcher.cpp \

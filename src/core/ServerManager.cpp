@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
+/*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 22:59:27 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/15 18:40:04 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/17 15:33:43 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,6 @@ void ServerManager::_init(const std::string& configFilePath) {
 void ServerManager::_serverLoop() {
 	_poller.initPoller(_serverBlocks);
 
-	// Redefine CTRL + C signal behavior
 	std::signal(SIGINT, _signalHandler);
 
 	while (g_keepRunning == 1) {

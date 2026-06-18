@@ -6,7 +6,7 @@
 /*   By: flebrun <flebrun@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/10 19:21:35 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/13 16:54:20 by flebrun          ###   ########.fr       */
+/*   Updated: 2026/06/17 15:33:27 by flebrun          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,13 +148,11 @@ std::vector<std::string> ConfigParser::_tokenizer(const std::string &line) {
         std::vector<std::string> tokens;
         std::string cleanLine = line;
 
-        // Erasing commentary elements
         size_t commentPos = cleanLine.find('#');
         if (commentPos != std::string::npos) {
                 cleanLine.erase(commentPos);
         }
 
-        // Separating brackets and semicolon if they're stuck to a word
         std::string formattedLine = "";
         for (size_t i = 0; i < cleanLine.length(); ++i) {
                 char ch = cleanLine[i];
@@ -167,7 +165,6 @@ std::vector<std::string> ConfigParser::_tokenizer(const std::string &line) {
                 }
         }
 
-        // Splitting the string into tokens
         std::stringstream ss(formattedLine);
         std::string token;
 
