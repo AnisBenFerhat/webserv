@@ -6,7 +6,7 @@
 /*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 19:15:27 by flebrun           #+#    #+#             */
-/*   Updated: 2026/06/15 14:54:49 by elkanega         ###   ########.fr       */
+/*   Updated: 2026/06/18 15:17:44 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,36 +44,24 @@ void ClientConnection::handleRead() {
 }
 
 bool ClientConnection::_receiveToBuffer() {
-        char tmpBuffer[1024];
+	char tmpBuffer[65536];
 
-        while (true) {
-                ssize_t bytesRead =
-                    recv(_fd->getRawFd(), tmpBuffer, sizeof(tmpBuffer), 0);
-
-                if (bytesRead < 0) {
-                        int logErrno = errno;
-                        if (logErrno == EAGAIN || logErrno == EWOULDBLOCK)
-                                break;
-                        Logger::logWarning(
-                            "Read error on FD: " +
-                            Convertor::intToStr(_fd->getRawFd()) + " - " +
-                            std::string(strerror(logErrno)));
-                        _status = Closing;
-                        _poller->removeClient(_fd->getRawFd());
-                        return false;
-                }
-                if (bytesRead == 0) {
-                        Logger::logInfo("Client closed connection on FD: " +
-                                        Convertor::intToStr(_fd->getRawFd()));
-                        _status = Closing;
-                        _poller->removeClient(_fd->getRawFd());
-                        return false;
-                }
-                _readBuffer.insert(_readBuffer.end(), tmpBuffer,
-                                   tmpBuffer + bytesRead);
-                _status = ReadingRequest;
-        }
-        return true;
+    ssize_t bytesRead = recv(_fd->getRawFd(),
+							 tmpBuffer, sizeof(tmpBuffer), 0);
+	if (bytesRead < 0) {
+		return true;
+	}
+	if (bytesRead == 0) {
+		Logger::logInfo("Client closed connection on FD: " +
+						Convertor::intToStr(_fd->getRawFd()));
+		_status = Closing;
+		_poller->removeClient(_fd->getRawFd());
+		return false;
+	}
+	_readBuffer.insert(_readBuffer.end(), tmpBuffer,
+					   tmpBuffer + bytesRead);
+	_status = ReadingRequest;
+	return true;
 }
 
 void ClientConnection::_processHttpRequest() {
@@ -131,6 +119,22 @@ void ClientConnection::_processHttpRequest() {
                                            request.getPath() + "]");
                         response =
                             generateErrorResponse(HTTP_404_NOT_FOUND, *config);
+                        std::string serialized = response.serialize();
+                                _writeBuffer.insert(_writeBuffer.end(),
+                                                    serialized.begin(),
+                                                    serialized.end());
+
+                                _readBuffer.erase(
+                                    _readBuffer.begin(),
+                                    _readBuffer.begin() + bytesParsed);
+                                if (request.getHeader("Connection") ==
+                                        "close" ||
+                                    response.getHeader("Connection") ==
+                                        "close") {
+                                        _status = Closing;
+                                } else {
+                                        _status = KeepAliveWait;
+                                }
                 } else {
                         std::string fullPath =
                             Dispatcher::_resolvePath(request, *location);
@@ -142,6 +146,14 @@ void ClientConnection::_processHttpRequest() {
                                         response = generateErrorResponse(
                                             HTTP_500_INTERNAL_SERVER_ERROR,
                                             *config);
+										std::string serialized = response.serialize();
+										_writeBuffer.insert(_writeBuffer.end(),
+															serialized.begin(),
+															serialized.end());
+										_readBuffer.erase(_readBuffer.begin(),
+														  _readBuffer.begin() + bytesParsed);
+										_status = Closing;
+										break;
                                 } else {
                                         CgiHandler *handler = new CgiHandler();
                                         int outPipe = handler->launchCgiProcess(
@@ -152,7 +164,15 @@ void ClientConnection::_processHttpRequest() {
                                                     generateErrorResponse(
                                                         HTTP_502_BAD_GATEWAY,
                                                         *config);
+												std::string serialized = response.serialize();
+												_writeBuffer.insert(_writeBuffer.end(),
+																	serialized.begin(),
+																	serialized.end());
+												_readBuffer.erase(_readBuffer.begin(),
+														  		  _readBuffer.begin() + bytesParsed);
+												_status = Closing;
                                                 delete handler;
+												break;
                                         } else {
                                                 _cgiStart = time(NULL);
                                                 _config = config;
@@ -246,26 +266,13 @@ void ClientConnection::handleWrite() {
                 return;
         }
 
-        bool yieldToPoll = false;
-
-        while (_writeOffset < _writeBuffer.size()) {
-                std::size_t remaining = _writeBuffer.size() - _writeOffset;
+        		std::size_t remaining = _writeBuffer.size() - _writeOffset;
                 std::size_t toSend = remaining < 65536 ? remaining : 65536;
 
                 int bytesSent = send(_fd->getRawFd(),
                                      &_writeBuffer[_writeOffset], toSend, 0);
                 if (bytesSent < 0) {
-                        int logErrno = errno;
-                        if (logErrno == EAGAIN || logErrno == EWOULDBLOCK) {
-                                yieldToPoll = true;
-                                break;
-                        }
-                        Logger::logWarning(
-                            "Failed while writing into socket FD: " +
-                            Convertor::intToStr(_fd->getRawFd()) + " - " +
-                            std::string(strerror(logErrno)));
-                        _status = Closing;
-                        _poller->removeClient(_fd->getRawFd());
+                        _poller->setEvents(_fd->getRawFd(), POLLOUT);
                         return;
                 }
                 if (bytesSent == 0) {
@@ -278,16 +285,9 @@ void ClientConnection::handleWrite() {
                 }
                 _writeOffset += static_cast<std::size_t>(bytesSent);
                 updateTimestamp();
-                if (static_cast<std::size_t>(bytesSent) < toSend) {
-                        yieldToPoll = true;
-                        break;
-                }
                 Logger::logInfo("Successfully sent packet into socket FD: " +
                                 Convertor::intToStr(_fd->getRawFd()));
-        }
-        if (yieldToPoll) {
-                _poller->setEvents(_fd->getRawFd(), POLLOUT);
-        } else if (_writeOffset >= _writeBuffer.size()) {
+			if (_writeOffset >= _writeBuffer.size()) {
                 _writeBuffer.clear();
                 _writeOffset = 0;
                 if ((_status == KeepAliveWait || _status == WritingResponse) &&
@@ -310,6 +310,8 @@ void ClientConnection::handleWrite() {
                                         " - Closing connection.");
                         _poller->removeClient(_fd->getRawFd());
                 }
+        } else {
+                _poller->setEvents(_fd->getRawFd(), POLLOUT);
         }
 }
 
@@ -378,10 +380,6 @@ void ClientConnection::cgiRead(int pipeFd) {
         }
         ssize_t bytesRead = read(_cgiOut->getRawFd(), buffer, sizeof(buffer));
         if (bytesRead < 0) {
-                int logErrno = errno;
-                if (logErrno == EAGAIN || logErrno == EWOULDBLOCK) {
-                        return;
-                }
                 Logger::logWarning("CGI read error.");
                 _status = Closing;
                 _cgiProcessing = false;
@@ -440,10 +438,6 @@ void ClientConnection::cgiWrite(int pipeFd) {
         ssize_t bytesWritten =
             write(pipeFd, _cgiBuffer.data(), _cgiBuffer.size());
         if (bytesWritten < 0) {
-                int logErrno = errno;
-                if (logErrno == EAGAIN || logErrno == EWOULDBLOCK) {
-                        return;
-                }
                 Logger::logWarning("CGI stdin write error on FD: " +
                                    Convertor::intToStr(pipeFd));
                 _status = Closing;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Dispatcher.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aben-fer <aben-fer@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elkanega <elkanega@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/02 19:08:10 by aben-fer          #+#    #+#             */
-/*   Updated: 2026/06/06 10:46:35 by aben-fer         ###   ########.fr       */
+/*   Updated: 2026/06/18 13:50:50 by elkanega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,6 +135,8 @@ HttpResponse Dispatcher::_dispatchDirectory(const std::string& fullPath,
 		HttpResponse response;
 		response.setStatus(HTTP_301_MOVED_PERMANENTLY);
 		response.setHeader("Location", request.getPath() + "/");
+		response.setHeader("Content-Length", "0");
+		response.setHeader("Connection", "close");
 		return response;
 	}
 
